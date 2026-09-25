@@ -298,6 +298,8 @@ export default function CoachDashboard({
                   className={`p-3 rounded-xl border text-xs space-y-1.5 transition-all ${
                     fb.severity === 'alert'
                       ? 'bg-red-950/30 border-red-500/40 text-red-200'
+                      : fb.severity === 'warning'
+                      ? 'bg-amber-950/30 border-amber-500/40 text-amber-200'
                       : fb.severity === 'success'
                       ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
                       : 'bg-zinc-950/60 border-zinc-800 text-zinc-300'
@@ -309,12 +311,34 @@ export default function CoachDashboard({
                     </span>
                     <span className="text-[10px] text-zinc-500 font-mono">{fb.date}</span>
                   </div>
-                  <div className="text-[11px] font-semibold text-amber-400">
-                    Ejercicio: {fb.exercise}
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-amber-400">
+                      Ejercicio: {fb.exercise}
+                    </span>
+                    {fb.badge && (
+                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        fb.severity === 'alert' 
+                          ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                      }`}>
+                        🤖 {fb.badge}
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs leading-relaxed text-zinc-300">
                     "{fb.note}"
                   </p>
+                  {fb.aiSuggestion && (
+                    <div className="mt-2 p-2 bg-zinc-900/90 rounded-lg border border-zinc-700/60 text-[11px] text-zinc-300 flex items-start gap-1.5">
+                      <span className="text-xs">💡</span>
+                      <div>
+                        <strong className="text-amber-400 block font-semibold text-[10px] uppercase">
+                          Sugerencia del Agente de Triage:
+                        </strong>
+                        <span className="text-zinc-300">{fb.aiSuggestion}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

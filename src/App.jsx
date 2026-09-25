@@ -14,6 +14,7 @@ import {
   INITIAL_ORDERS,
   INITIAL_FEEDBACKS
 } from './mockData';
+import { analyzeInjuryFeedback } from './services/athleteService';
 
 export default function App() {
   // Global Role: 'athlete' | 'coach' | 'store'
@@ -105,8 +106,11 @@ export default function App() {
     );
   };
 
-  // Send feedback from Gym directly to Coach
+  // Send feedback from Gym directly to Coach con Triage del Agente de IA
   const handleSendFeedbackToCoach = (studentId, studentName, exercise, note) => {
+    // Evaluación automática por el Agente de Triage de Lesiones
+    const triage = analyzeInjuryFeedback(note);
+
     const newFb = {
       id: `fb-${Date.now()}`,
       studentId,
@@ -114,7 +118,9 @@ export default function App() {
       date: "Recién reportado",
       exercise,
       note,
-      severity: note.toLowerCase().includes('dolor') || note.toLowerCase().includes('molestia') ? 'alert' : 'normal'
+      severity: triage.severity === 'RIESGO_LESIÓN' ? 'alert' : triage.severity === 'FATIGA' ? 'warning' : 'normal',
+      badge: triage.badge,
+      aiSuggestion: triage.suggestion
     };
     setFeedbacks((prev) => [newFb, ...prev]);
   };
