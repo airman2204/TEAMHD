@@ -1,0 +1,18 @@
+{
+  "name": "Team HD Athlete PWA",
+  "short_name": "TeamHD PWA",
+  "description": "Tu entrenador en el bolsillo: rutinas, videos técnicos, bitácora de gym y rest timer",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
