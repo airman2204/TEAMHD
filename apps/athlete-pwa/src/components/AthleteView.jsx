@@ -37,7 +37,9 @@ export default function AthleteView({
   cart,
   onAddToCart,
   onOpenCheckout,
-  onSendFeedbackToCoach
+  onSendFeedbackToCoach,
+  onLogout,
+  onOpenChangePassword
 }) {
   const [activeTab, setActiveTab] = React.useState('workout'); // 'workout' | 'profile' | 'store'
   const [selectedDay, setSelectedDay] = React.useState('Lun');
@@ -87,16 +89,16 @@ export default function AthleteView({
       {/* Top Header App Brand Real (Sticky Mobile Header) */}
       <header className="sticky top-0 z-30 px-4 py-3 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between shadow-2xs transition-colors">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 dark:bg-gradient-to-br dark:from-amber-500 dark:to-orange-600 flex items-center justify-center font-black text-white dark:text-black text-xs shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20">
-              HD
+            <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white text-xs shadow-md shadow-emerald-600/20">
+              AG
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black tracking-wider text-slate-900 dark:text-white">TEAM HD</span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold">×</span>
-                <span className="text-xs font-black tracking-wider text-emerald-600 dark:text-orange-500">STRENGTH FIT</span>
+                <span className="text-xs font-black tracking-wider text-slate-900 dark:text-white">APP GYM</span>
+                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold">|</span>
+                <span className="text-xs font-bold tracking-wider text-emerald-600 dark:text-emerald-400">Atleta</span>
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Atleta: <strong className="text-slate-800 dark:text-zinc-200">{athlete.name}</strong></p>
+              <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Hola, <strong className="text-slate-800 dark:text-zinc-200">{athlete.name}</strong></p>
             </div>
           </div>
 
@@ -485,9 +487,35 @@ export default function AthleteView({
                 )}
               </form>
 
+              {/* Account Security & Actions */}
+              <div className="bg-white dark:bg-zinc-900 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 space-y-3 shadow-xs transition-colors">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+                  <ShieldAlert className="w-3.5 h-3.5 text-emerald-600" />
+                  Seguridad de la Cuenta
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={onOpenChangePassword}
+                    className="w-full py-2.5 px-3 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>Cambiar Contraseña</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onLogout}
+                    className="w-full py-2.5 px-3 bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-950/50 dark:text-red-400 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 border border-red-200 dark:border-red-500/30"
+                  >
+                    <span>Cerrar Sesión</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Coach Summary */}
               <div className="bg-white dark:bg-zinc-900/40 border border-slate-200/90 dark:border-zinc-800 rounded-2xl p-4 text-xs space-y-1 shadow-2xs transition-colors">
-                <span className="font-bold text-slate-800 dark:text-zinc-300">Notas del Coach Dave:</span>
+                <span className="font-bold text-slate-800 dark:text-zinc-300">Notas de tu Coach:</span>
                 <p className="text-slate-600 dark:text-zinc-400 font-medium">{athlete.coachNotes}</p>
               </div>
             </div>

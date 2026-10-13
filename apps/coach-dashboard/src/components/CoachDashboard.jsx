@@ -71,7 +71,7 @@ export default function CoachDashboard({
   }, [selectedStudentId, selectedDay, routines]);
 
   // Handle Add Student Submit
-  const handleCreateStudent = (e) => {
+  const handleCreateStudent = async (e) => {
     e.preventDefault();
     if (!newStudentForm.name || !newStudentForm.email) return;
 
@@ -90,14 +90,17 @@ export default function CoachDashboard({
       coachNotes: "Alumno nuevo, requiere evaluación inicial."
     };
 
-    onAddStudent(newStudent);
-    setSelectedStudentId(newId);
-    setIsNewStudentModalOpen(false);
-    setMagicLinkNotice({
-      name: newStudent.name,
-      email: newStudent.email
-    });
-    setNewStudentForm({ name: "", phone: "", email: "" });
+    const created = await onAddStudent(newStudentForm);
+    if (created) {
+      setSelectedStudentId(created.id);
+      setIsNewStudentModalOpen(false);
+      setMagicLinkNotice({
+        name: created.name,
+        email: created.email,
+        tempPassword: created.tempPassword
+      });
+      setNewStudentForm({ name: "", phone: "", email: "" });
+    }
   };
 
   // Add exercise to builder
@@ -164,8 +167,8 @@ export default function CoachDashboard({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Team HD Muscle</span>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-semibold">Coach Portal Pro</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">App Coach</span>
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-semibold">Marca Blanca</span>
             </div>
             <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">Gestión de Atletas & Prescripción</h1>
           </div>
@@ -174,7 +177,7 @@ export default function CoachDashboard({
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsNewStudentModalOpen(true)}
-            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-extrabold rounded-2xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 hover:scale-102 active:scale-98 transition-all"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 hover:scale-102 active:scale-98 transition-all"
           >
             <UserPlus className="w-4 h-4" />
             <span>Nuevo Alumno</span>
@@ -182,23 +185,29 @@ export default function CoachDashboard({
         </div>
       </div>
 
-      {/* Magic Link Notice */}
+      {/* Student Welcome / Temp Password Notice */}
       {magicLinkNotice && (
-        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/50 flex items-start justify-between shadow-xs animate-in slide-in-from-top duration-300">
-          <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+        <div className="p-5 rounded-3xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/50 flex items-start justify-between shadow-xs animate-in slide-in-from-top duration-300">
+          <div className="flex items-start gap-3.5">
+            <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-300">
-                ¡Invitación enviada exitosamente con Magic Link!
+              <h4 className="text-sm font-black text-emerald-900 dark:text-emerald-300">
+                ¡Alumno dado de alta y credenciales generadas!
               </h4>
-              <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5">
-                Se ha despachado el correo de bienvenida y acceso inmediato a <strong>{magicLinkNotice.email}</strong> para el alumno <strong>{magicLinkNotice.name}</strong>.
+              <p className="text-xs text-slate-600 dark:text-zinc-300 mt-1">
+                El alumno <strong>{magicLinkNotice.name}</strong> puede acceder de inmediato a <strong>App Gym</strong> con su correo: <strong>{magicLinkNotice.email}</strong>
               </p>
-              <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 block mt-1">
-                Token link generado: https://teamhd.fit/access?token=magic_hd_{Date.now()}
-              </span>
+              {magicLinkNotice.tempPassword && (
+                <div className="mt-2.5 p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-500/30 inline-flex flex-col gap-1">
+                  <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">Contraseña temporal asignada:</span>
+                  <span className="text-xs font-mono font-black text-emerald-600 dark:text-emerald-400 select-all tracking-wider">
+                    {magicLinkNotice.tempPassword}
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">El alumno deberá cambiar esta contraseña al ingresar por primera vez.</span>
+                </div>
+              )}
             </div>
           </div>
           <button

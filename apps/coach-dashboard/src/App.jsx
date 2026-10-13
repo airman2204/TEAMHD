@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import CoachDashboard from './components/CoachDashboard';
-import { supabase, isSupabaseConfigured } from './lib/supabase';
+import CoachLogin from './components/CoachLogin';
+import { supabase, supabaseAdmin, isSupabaseConfigured } from './lib/supabase';
 import { 
   INITIAL_STUDENTS, 
   INITIAL_EXERCISE_LIBRARY, 
@@ -10,21 +11,99 @@ import {
 } from './mockData';
 import { analyzeInjuryFeedback } from './services/athleteService';
 import ThemeToggle from './components/ThemeToggle';
+import { LogOut, ShieldCheck, User } from 'lucide-react';
+
+const COACH_SESSION_KEY = 'coach_active_session_token';
 
 export default function App() {
-  const [students, setStudents] = useState(INITIAL_STUDENTS);
-  const [exerciseLibrary, setExerciseLibrary] = useState(INITIAL_EXERCISE_LIBRARY);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+
+  const [students, setStudents] = useState([]);
+  const [exerciseLibrary, setExerciseLibrary] = useState([]);
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [routines, setRoutines] = useState(INITIAL_STUDENT_ROUTINES);
-  const [feedbacks, setFeedbacks] = useState(INITIAL_FEEDBACKS);
+  const [routines, setRoutines] = useState({});
+  const [feedbacks, setFeedbacks] = useState([]);
   const [isDbConnected, setIsDbConnected] = useState(isSupabaseConfigured);
 
-  // 1. CARGA INICIAL DESDE SUPABASE
+  // 1. GESTIÓN DE SESIÓN ÚNICA & PERSISTENCIA (Seguridad)
   useEffect(() => {
+    async function verifyExistingSession() {
+      if (!isSupabaseConfigured || !supabase) {
+        setIsAuthChecking(false);
+        return;
+      }
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session && session.user) {
+          const localToken = localStorage.getItem(COACH_SESSION_KEY);
+          const serverToken = session.user.user_metadata?.active_session_token;
+
+          // Si el token del navegador no coincide con el último emitido en el servidor, se invalida
+          if (serverToken && localToken && serverToken !== localToken) {
+            console.warn('Sesión caducada por inicio de sesión en otro dispositivo.');
+            await supabase.auth.signOut();
+            localStorage.removeItem(COACH_SESSION_KEY);
+            setCurrentUser(null);
+          } else {
+            setCurrentUser(session.user);
+          }
+        }
+      } catch (err) {
+        console.error('Error al verificar sesión:', err);
+      } finally {
+        setIsAuthChecking(false);
+      }
+    }
+
+    verifyExistingSession();
+
+    // Listener de cambios de auth
+    const { data: authListener } = supabase?.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_OUT') {
+        setCurrentUser(null);
+        localStorage.removeItem(COACH_SESSION_KEY);
+      } else if (event === 'SIGNED_IN' && session?.user) {
+        setCurrentUser(session.user);
+      }
+    }) || { data: { subscription: { unsubscribe: () => {} } } };
+
+    return () => {
+      authListener.subscription?.unsubscribe();
+    };
+  }, []);
+
+  // 2. CARGA DE DATOS TRAS AUTENTICACIÓN
+  useEffect(() => {
+    if (!currentUser) return;
+
     async function loadCloudData() {
       if (!isSupabaseConfigured || !supabase) return;
 
       try {
+        // Cargar alumnos reales de Supabase vinculados a este Coach
+        const { data: athletesData, error: athError } = await supabase
+          .from('athletes')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (athletesData && !athError) {
+          setStudents(athletesData.map(a => ({
+            id: a.id,
+            name: a.full_name,
+            email: a.email || `${a.phone}@atleta.gym`,
+            phone: a.phone,
+            weight: a.weight_kg || 70,
+            height: a.height_cm || 170,
+            goal: a.goal || 'Hipertrofia',
+            injuries: a.injuries_notes || 'Sin lesiones',
+            status: a.is_active ? 'Activo' : 'Inactivo',
+            avatar: a.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+            coachNotes: 'Evaluación registrada en App Coach.'
+          })));
+        }
+
         // Cargar catálogo de ejercicios desde Supabase
         const { data: exercisesData, error: exError } = await supabase
           .from('exercises')
@@ -43,7 +122,7 @@ export default function App() {
 
         // Cargar alertas en vivo de Supabase
         const { data: alertsData, error: alError } = await supabase
-          .from('triage_alerts')
+          .from('coach_alerts')
           .select('*')
           .order('created_at', { ascending: false })
           .limit(10);
@@ -51,78 +130,132 @@ export default function App() {
         if (alertsData && alertsData.length > 0 && !alError) {
           setFeedbacks(alertsData.map(a => ({
             id: a.id,
-            studentName: a.exercise_name || "Atleta en Gym",
+            studentName: "Atleta en Gimnasio",
             date: "Tiempo Real",
             exercise: a.exercise_name,
-            note: a.raw_feedback,
-            severity: a.severity === 'RIESGO_ALTO' ? 'alert' : a.severity === 'RIESGO_MEDIO' ? 'warning' : 'normal',
+            note: a.feedback_text,
+            severity: a.severity === 'alert' || a.severity === 'RIESGO_LESIÓN' ? 'alert' : 'warning',
             badge: a.severity,
-            aiSuggestion: a.ai_recommendation
+            aiSuggestion: a.ai_triage_suggestion
           })));
         }
 
         setIsDbConnected(true);
       } catch (err) {
-        console.warn('Usando caché híbrido con Supabase:', err);
+        console.warn('Error al cargar datos de Supabase:', err);
       }
     }
 
     loadCloudData();
+  }, [currentUser]);
 
-    // 2. ESCUCHAR ALERTAS DE TRIAGE EN TIEMPO REAL (SUPABASE REALTIME)
-    if (supabase && isSupabaseConfigured) {
-      const channel = supabase
-        .channel('triage_alerts_realtime')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'triage_alerts' }, (payload) => {
-          const newAlert = payload.new;
-          setFeedbacks(prev => [
-            {
-              id: newAlert.id,
-              studentName: "Atleta en vivo",
-              date: "Recién llegado",
-              exercise: newAlert.exercise_name,
-              note: newAlert.raw_feedback,
-              severity: newAlert.severity === 'RIESGO_ALTO' ? 'alert' : 'warning',
-              badge: newAlert.severity,
-              aiSuggestion: newAlert.ai_recommendation
-            },
-            ...prev
-          ]);
-        })
-        .subscribe();
+  // LOGIN HANDLER: Garantiza 1 sola sesión activa
+  const handleLogin = async (email, password, rememberMe) => {
+    if (!supabase) throw new Error('Servicio de autenticación no inicializado.');
 
-      return () => {
-        supabase.removeChannel(channel);
-      };
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password
+    });
+
+    if (error) {
+      throw new Error('Credenciales incorrectas. Verifica tu correo y contraseña.');
     }
-  }, []);
 
-  const handleAddStudent = async (newStudent) => {
-    setStudents((prev) => [...prev, newStudent]);
-    setRoutines((prev) => ({
-      ...prev,
-      [newStudent.id]: {
-        "Lun": { dayTitle: "Evaluación Inicial", supplementPrescription: "Creatina 5g", exercises: [] }
+    // Generar nuevo token único de sesión (Single Device Login)
+    const newSessionToken = `sess_coach_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // Registrar en Supabase auth metadata el nuevo token activo
+    await supabase.auth.updateUser({
+      data: {
+        active_session_token: newSessionToken,
+        last_login_at: new Date().toISOString()
       }
-    }));
+    });
 
-    // Sincronizar en Supabase
-    if (isSupabaseConfigured && supabase) {
+    // Guardar en el navegador actual
+    localStorage.setItem(COACH_SESSION_KEY, newSessionToken);
+    setCurrentUser(data.user);
+  };
+
+  // LOGOUT HANDLER
+  const handleLogout = async () => {
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
+    localStorage.removeItem(COACH_SESSION_KEY);
+    setCurrentUser(null);
+  };
+
+  // DAR DE ALTA ALUMNO: Genera cuenta con contraseña temporal y la envía
+  const handleAddStudent = async (newStudentForm) => {
+    const tempPassword = `GymPass${Math.floor(1000 + Math.random() * 9000)}!`;
+    const coachId = currentUser?.id || 'c3cf10eb-2358-4b0b-820b-b0d3413a56aa';
+    let createdAuthId = null;
+
+    // 1. Si está disponible supabaseAdmin, registrar auth user
+    if (supabaseAdmin) {
+      try {
+        const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
+          email: newStudentForm.email,
+          password: tempPassword,
+          email_confirm: true,
+          user_metadata: {
+            role: 'athlete',
+            name: newStudentForm.name,
+            must_change_password: true,
+            temp_password: tempPassword
+          }
+        });
+
+        if (authUser?.user) {
+          createdAuthId = authUser.user.id;
+        } else if (authErr) {
+          console.warn('Aviso auth al crear atleta:', authErr.message);
+        }
+      } catch (err) {
+        console.warn('Fallo creación auth atleta:', err);
+      }
+    }
+
+    const studentRecordId = createdAuthId || `std-${Date.now()}`;
+
+    // 2. Guardar en base de datos tabla athletes
+    if (supabase && createdAuthId) {
       try {
         await supabase.from('athletes').insert([
           {
-            id: newStudent.id.startsWith('std-') ? undefined : newStudent.id,
-            coach_id: '00000000-0000-0000-0000-000000000000', // Coach default
-            full_name: newStudent.name,
-            phone: newStudent.phone,
-            goal: newStudent.goal,
-            injuries_notes: newStudent.injuries
+            id: createdAuthId,
+            coach_id: coachId,
+            full_name: newStudentForm.name,
+            phone: newStudentForm.phone,
+            goal: newStudentForm.goal || 'Hipertrofia',
+            injuries_notes: newStudentForm.injuries || 'Ninguna reportada',
+            avatar_url: newStudentForm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
           }
         ]);
       } catch (e) {
-        console.log('Sincronizado localmente', e);
+        console.error('Error insertando atleta en Supabase:', e);
       }
     }
+
+    const newStudent = {
+      id: studentRecordId,
+      name: newStudentForm.name,
+      email: newStudentForm.email,
+      phone: newStudentForm.phone,
+      weight: newStudentForm.weight || 70,
+      height: newStudentForm.height || 170,
+      goal: newStudentForm.goal || 'Hipertrofia',
+      injuries: newStudentForm.injuries || 'Ninguna reportada',
+      status: 'Activo',
+      avatar: newStudentForm.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      coachNotes: 'Evaluación inicial pendiente en App Coach.',
+      tempPassword: tempPassword // Guardada para mostrarla en el modal
+    };
+
+    setStudents(prev => [newStudent, ...prev]);
+    return newStudent;
   };
 
   const handleSaveRoutineDay = async (studentId, day, dayData) => {
@@ -132,45 +265,69 @@ export default function App() {
       return { ...prev, [studentId]: studentRoutines };
     });
 
-    // Sincronizar rutina en Supabase
-    if (isSupabaseConfigured && supabase) {
+    if (isSupabaseConfigured && supabase && !studentId.startsWith('std-')) {
       try {
         await supabase.from('routines').upsert({
-          athlete_id: studentId.startsWith('std-') ? undefined : studentId,
+          athlete_id: studentId,
           day_of_week: day,
           session_title: dayData.dayTitle,
           supplementation_notes: dayData.supplementPrescription
         }, { onConflict: 'athlete_id,day_of_week' });
       } catch (e) {
-        console.log('Rutina guardada localmente y en caché', e);
+        console.log('Rutina sincronizada', e);
       }
     }
   };
 
+  // Pantalla de carga mientras se verifica la sesión en el navegador
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] flex flex-col items-center justify-center p-4">
+        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 mt-3">Validando sesión de App Coach...</span>
+      </div>
+    );
+  }
+
+  // Si no hay usuario autenticado, mostrar pantalla de Login
+  if (!currentUser) {
+    return <CoachLogin onLoginSuccess={handleLogin} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white transition-colors duration-200">
-      {/* Top Coach Header Bar */}
+      {/* Top Coach Header Bar (Marca Blanca App Coach) */}
       <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-zinc-800/80 px-6 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-emerald-500/20">
-            HD
+            AC
           </div>
           <div>
             <h1 className="text-sm font-black tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
-              <span>TEAM HD MUSCLE</span>
-              <span className="text-slate-400 dark:text-zinc-600 font-normal">|</span>
-              <span className="text-emerald-600 dark:text-amber-400 font-semibold text-xs">Coach Portal Pro</span>
+              <span>APP COACH</span>
+              <span className="text-slate-300 dark:text-zinc-700 font-normal">|</span>
+              <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs">Marca Blanca Pro</span>
             </h1>
-            <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Panel Central de Prescripción & Alertas en Vivo</p>
+            <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Panel Administrativo de Prescripción & Alertas</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 bg-slate-100 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-zinc-300">
+            <User className="w-3.5 h-3.5 text-emerald-600" />
+            <span>{currentUser.email}</span>
+          </div>
+
           <ThemeToggle />
-          <span className="text-[11px] font-mono text-emerald-700 dark:text-zinc-300 bg-emerald-50 dark:bg-zinc-900 border border-emerald-300/80 dark:border-emerald-500/40 px-3 py-1 rounded-full flex items-center gap-2 shadow-xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Supabase Cloud: Conectado</span>
-          </span>
+
+          <button
+            onClick={handleLogout}
+            className="p-2 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 dark:bg-zinc-900 dark:hover:bg-red-950/40 dark:text-zinc-400 dark:hover:text-red-400 border border-slate-200/80 dark:border-zinc-800 transition-all flex items-center gap-1.5 text-xs font-bold shadow-2xs"
+            title="Cerrar sesión"
+          >
+            <LogOut className="w-4 h-4" />
+            <span className="hidden md:inline">Salir</span>
+          </button>
         </div>
       </header>
 
@@ -189,3 +346,4 @@ export default function App() {
     </div>
   );
 }
+
