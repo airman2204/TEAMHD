@@ -5,11 +5,10 @@ export default function ThemeToggle({ className = "" }) {
   const [isDark, setIsDark] = React.useState(false);
 
   React.useEffect(() => {
-    // Revisar preferencia guardada o clase actual en html
+    // Si no hay preferencia guardada, arrancar en modo CLARO (Opción A)
     const savedTheme = localStorage.getItem('teamhd_theme');
-    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
     
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+    if (savedTheme === 'dark') {
       setIsDark(true);
       document.documentElement.classList.add('dark');
     } else {
