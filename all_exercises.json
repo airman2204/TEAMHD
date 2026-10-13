@@ -1,0 +1,602 @@
+[
+  {
+    "id": "8d5de54c-6dbb-4b40-9973-fc63d7954a71",
+    "name": "3/4 Sit-Up"
+  },
+  {
+    "id": "86f1246b-09b9-47ba-abd3-212cb677dc16",
+    "name": "Ab Crunch Machine"
+  },
+  {
+    "id": "2997c1da-fb2e-4723-a62c-25c59039387e",
+    "name": "Ab Roller"
+  },
+  {
+    "id": "4a9ea05e-404f-4e1a-bdd8-76749e74939a",
+    "name": "Advanced Kettlebell Windmill"
+  },
+  {
+    "id": "922f8e3c-82cf-4610-8236-c66ca7e87182",
+    "name": "Air Bike"
+  },
+  {
+    "id": "845501ca-a2cb-4e5a-b306-c23dad02b1e1",
+    "name": "Alternate Hammer Curl"
+  },
+  {
+    "id": "1ef0323d-f34b-417c-8f26-2b79c8641534",
+    "name": "Alternate Heel Touchers"
+  },
+  {
+    "id": "57b85424-f474-409a-a35a-43c8a6803ea7",
+    "name": "Alternate Incline Dumbbell Curl"
+  },
+  {
+    "id": "409c213d-3c8b-4d3a-9413-d00797faac76",
+    "name": "Ball Leg Curl"
+  },
+  {
+    "id": "2df755fa-6e9c-429b-9c5d-27ceeff5da0d",
+    "name": "Alternating Cable Shoulder Press"
+  },
+  {
+    "id": "d20779e9-d870-44c4-9229-fbf36cbc98d5",
+    "name": "Alternating Deltoid Raise"
+  },
+  {
+    "id": "a32c8dcb-1e40-4766-a59e-8f6cbb1ed9e9",
+    "name": "Alternating Floor Press"
+  },
+  {
+    "id": "dd88bd70-8393-4f01-be8b-fbb726f6e2a9",
+    "name": "Alternating Hang Clean"
+  },
+  {
+    "id": "79610686-1e1a-492b-a211-505c2bcd094b",
+    "name": "Alternating Kettlebell Press"
+  },
+  {
+    "id": "563a9ae9-c06e-43b7-b0ba-0ac4ea1093e2",
+    "name": "Alternating Kettlebell Row"
+  },
+  {
+    "id": "970bb869-0eeb-4a1e-8625-b1b8be2706ff",
+    "name": "Alternating Renegade Row"
+  },
+  {
+    "id": "15ed1c98-dd9d-4bec-b4f0-3ecabfcd7a69",
+    "name": "Anti-Gravity Press"
+  },
+  {
+    "id": "46f81818-15ce-4379-9d70-4319d7337c75",
+    "name": "Arnold Dumbbell Press"
+  },
+  {
+    "id": "56b6fdc9-07cd-4675-8f68-bc7d5424577e",
+    "name": "Around The Worlds"
+  },
+  {
+    "id": "e5be9496-8b9c-42e7-8270-6b3d714f871b",
+    "name": "Back Flyes - With Bands"
+  },
+  {
+    "id": "49d8d327-f766-48f5-9d09-d5bd4247d3f0",
+    "name": "Balance Board"
+  },
+  {
+    "id": "f0b2501c-92e7-45c6-af66-16049f33a5f9",
+    "name": "Band Assisted Pull-Up"
+  },
+  {
+    "id": "a57c50de-1340-4cab-9673-7dc1a610b646",
+    "name": "Band Good Morning"
+  },
+  {
+    "id": "85c27266-4fce-4a63-906f-7b1a8dd74f7d",
+    "name": "Band Good Morning (Pull Through)"
+  },
+  {
+    "id": "a55cd440-547e-4577-bd43-92bf7d406db0",
+    "name": "Band Hip Adductions"
+  },
+  {
+    "id": "56ac9a96-691a-4562-8dbe-479e226844ed",
+    "name": "Band Pull Apart"
+  },
+  {
+    "id": "38cbde10-86b4-47e7-ad59-2b25bbb0c22d",
+    "name": "Band Skull Crusher"
+  },
+  {
+    "id": "b76cd58c-4332-4a32-b8f3-32958750f141",
+    "name": "Barbell Ab Rollout"
+  },
+  {
+    "id": "072019da-b081-4393-874d-099daaba7ba8",
+    "name": "Barbell Ab Rollout - On Knees"
+  },
+  {
+    "id": "7c2c1fd3-2d27-4a0a-9fad-ac47dafabe09",
+    "name": "Barbell Bench Press - Medium Grip"
+  },
+  {
+    "id": "535f774f-9ba9-41f2-9eb7-203fc7886532",
+    "name": "Barbell Curl"
+  },
+  {
+    "id": "bba452a0-6353-46cb-af68-71eb4afbf5f4",
+    "name": "Barbell Curls Lying Against An Incline"
+  },
+  {
+    "id": "f31dbf3e-7128-4ed0-9c89-88818d287672",
+    "name": "Barbell Deadlift"
+  },
+  {
+    "id": "7e2b05a1-635c-4cb7-82ba-307a99876098",
+    "name": "Barbell Full Squat"
+  },
+  {
+    "id": "69473a46-1d32-45c3-9727-acaafa76bfd4",
+    "name": "Barbell Glute Bridge"
+  },
+  {
+    "id": "0adbc7d3-2c95-4f71-bedc-9254ee36145f",
+    "name": "Barbell Guillotine Bench Press"
+  },
+  {
+    "id": "eec5e0e1-6482-4042-a6e4-a5c7db10cf2d",
+    "name": "Barbell Hack Squat"
+  },
+  {
+    "id": "9d6540ac-7a6c-4a96-80b4-d3af53b6f1e2",
+    "name": "Barbell Hip Thrust"
+  },
+  {
+    "id": "30136745-4d88-42ff-b6cc-794e17a3a49f",
+    "name": "Barbell Incline Bench Press - Medium Grip"
+  },
+  {
+    "id": "0ab68eba-af25-4583-94ab-923f9e0f6967",
+    "name": "Barbell Incline Shoulder Raise"
+  },
+  {
+    "id": "4faa211c-ce18-4147-b9f0-bb5125c980ac",
+    "name": "Barbell Lunge"
+  },
+  {
+    "id": "9f35a7f9-a176-4edb-a591-6c7502d04b12",
+    "name": "Decline Crunch"
+  },
+  {
+    "id": "7f8523fe-5f82-4b8b-ac9e-9070620ee56a",
+    "name": "Barbell Rear Delt Row"
+  },
+  {
+    "id": "7ed99ac7-bc86-486d-ae43-bacee98600f1",
+    "name": "Barbell Rollout from Bench"
+  },
+  {
+    "id": "02f9db9e-59e4-4419-94c5-72ab62bf2474",
+    "name": "Barbell Seated Calf Raise"
+  },
+  {
+    "id": "01edae86-b8e5-4f88-ae02-b69c4db75538",
+    "name": "Barbell Shoulder Press"
+  },
+  {
+    "id": "e4ce2426-0ecb-4d25-b33a-d82dc4b4a934",
+    "name": "Barbell Shrug"
+  },
+  {
+    "id": "d4912790-fb0b-4492-8024-5a530e591ff2",
+    "name": "Barbell Shrug Behind The Back"
+  },
+  {
+    "id": "cf0a4057-daed-4cac-87fb-186a189dea9e",
+    "name": "Barbell Side Bend"
+  },
+  {
+    "id": "6166a38e-56a0-4306-8dc7-cc2fde4ac816",
+    "name": "Barbell Side Split Squat"
+  },
+  {
+    "id": "90fc18f4-2de1-4fc2-89ee-42d9adddb096",
+    "name": "Barbell Squat"
+  },
+  {
+    "id": "ca5ae6dc-61b2-4823-925a-2cea94a4bda9",
+    "name": "Barbell Squat To A Bench"
+  },
+  {
+    "id": "1d00cb3d-8c9f-4eac-828f-64e32478cf17",
+    "name": "Barbell Step Ups"
+  },
+  {
+    "id": "71d9d9a6-3f19-4aa8-a31c-f2de46fa2cec",
+    "name": "Barbell Walking Lunge"
+  },
+  {
+    "id": "2bd3b2ef-5a65-435c-a818-192614a1c6a3",
+    "name": "Battling Ropes"
+  },
+  {
+    "id": "4e116ee1-a1ee-4031-bfaa-5d611d38f081",
+    "name": "Bench Dips"
+  },
+  {
+    "id": "7dde9814-d2f4-4956-ab40-9209c2be0153",
+    "name": "Bench Press - Powerlifting"
+  },
+  {
+    "id": "c8b4c305-8869-4bb3-b619-6d4da7636c9c",
+    "name": "Bench Press - With Bands"
+  },
+  {
+    "id": "cafc97b1-03d0-4981-95f1-081de7a4732e",
+    "name": "Bench Press with Chains"
+  },
+  {
+    "id": "48410a34-3ef3-46ee-8e55-b4c04072e896",
+    "name": "Bent-Arm Barbell Pullover"
+  },
+  {
+    "id": "25860c41-33cd-4006-8942-41545cc2fa02",
+    "name": "Bent-Arm Dumbbell Pullover"
+  },
+  {
+    "id": "eeeae9d9-e9e9-49cd-bfd1-98d5164061fd",
+    "name": "Bent-Knee Hip Raise"
+  },
+  {
+    "id": "62221ccc-b692-4266-8980-a474b2c25cdb",
+    "name": "Bent Over Barbell Row"
+  },
+  {
+    "id": "3f9685f4-da8f-4aae-9d70-437a604b5552",
+    "name": "Bent Over Dumbbell Rear Delt Raise With Head On Bench"
+  },
+  {
+    "id": "0804bb4a-90e8-4079-8872-3b15055b7657",
+    "name": "Bent Over Low-Pulley Side Lateral"
+  },
+  {
+    "id": "d00acb54-e9c9-44a7-ac81-259706a904a1",
+    "name": "Bent Over One-Arm Long Bar Row"
+  },
+  {
+    "id": "ad9dd649-bd6b-4770-a8ce-7b4bb1254c54",
+    "name": "Bent Over Two-Arm Long Bar Row"
+  },
+  {
+    "id": "a7063ac0-1a43-4d0a-91c5-7e06f73de49e",
+    "name": "Bent Over Two-Dumbbell Row"
+  },
+  {
+    "id": "d8864d00-3599-4c72-ba7b-636e1d1e38e1",
+    "name": "Bent Over Two-Dumbbell Row With Palms In"
+  },
+  {
+    "id": "69e7d7f1-8bd5-4719-93b7-7ec5585adc4b",
+    "name": "Bent Press"
+  },
+  {
+    "id": "bb0df5c4-2ef2-4579-ae1b-6c7c4542b062",
+    "name": "Board Press"
+  },
+  {
+    "id": "31c00982-6543-442e-b443-f0e550da70b2",
+    "name": "Body-Up"
+  },
+  {
+    "id": "d5dadf9e-9ceb-4c3d-9bed-9fff79046efc",
+    "name": "Body Tricep Press"
+  },
+  {
+    "id": "27886357-f55e-4f34-b2ee-749c476aa7a4",
+    "name": "Bodyweight Flyes"
+  },
+  {
+    "id": "09bf7c42-bbfb-4bd8-8a51-aa89f74a7ba7",
+    "name": "Bodyweight Mid Row"
+  },
+  {
+    "id": "269b0430-d8ce-4ca6-9b6e-48ca3efa6598",
+    "name": "Bodyweight Squat"
+  },
+  {
+    "id": "6e9c7f81-f4cd-433f-a47f-9cafd31f99bb",
+    "name": "Bodyweight Walking Lunge"
+  },
+  {
+    "id": "09c1020e-fb18-4f0f-a02d-fdc0ed725aec",
+    "name": "Bosu Ball Cable Crunch With Side Bends"
+  },
+  {
+    "id": "1cf98877-9982-45a0-8409-9db803f21d64",
+    "name": "Bottoms-Up Clean From The Hang Position"
+  },
+  {
+    "id": "d7de6f35-8b11-452f-8ebc-ac4290be40c8",
+    "name": "Bottoms Up"
+  },
+  {
+    "id": "6f4acf3d-3223-4165-86a1-25bc49ac9636",
+    "name": "Box Squat"
+  },
+  {
+    "id": "0b34fbec-3d4e-43e2-815e-9e80f06c4a6a",
+    "name": "Cable Hammer Curls - Rope Attachment"
+  },
+  {
+    "id": "4fe48a71-a5fb-4cd5-bb80-fef721a3ce03",
+    "name": "Cable Hip Adduction"
+  },
+  {
+    "id": "b9ecf3ba-b96f-4b73-af17-9c72cc334e7c",
+    "name": "Box Squat with Bands"
+  },
+  {
+    "id": "68e49c13-e08b-45bb-9af7-738e670b1d99",
+    "name": "Box Squat with Chains"
+  },
+  {
+    "id": "20204636-c30c-40f0-a59d-ab60b34bb215",
+    "name": "Bradford/Rocky Presses"
+  },
+  {
+    "id": "4ee16a29-8d83-47fd-b0e2-f10b42287874",
+    "name": "Butt-Ups"
+  },
+  {
+    "id": "49cbf10c-3fcb-4c56-816b-f2cdb24b185a",
+    "name": "Butt Lift (Bridge)"
+  },
+  {
+    "id": "230a26f5-0176-4d97-8ea2-d0d906cc5f42",
+    "name": "Butterfly"
+  },
+  {
+    "id": "0fc04cc7-0663-42f1-ab2a-fc544e6e502f",
+    "name": "Cable Chest Press"
+  },
+  {
+    "id": "7482d4a1-f764-45bf-a380-ed841faae1f2",
+    "name": "Cable Crossover"
+  },
+  {
+    "id": "7559c01a-05b1-43ea-9afb-2ff68a3c5857",
+    "name": "Cable Crunch"
+  },
+  {
+    "id": "305b5e7f-01ce-425c-ba6c-8d972925e792",
+    "name": "Cable Deadlifts"
+  },
+  {
+    "id": "34553d9b-917f-4602-9cfc-ae6b0bdc7821",
+    "name": "Cable Incline Pushdown"
+  },
+  {
+    "id": "492c0144-1110-486c-aeee-0716787e6227",
+    "name": "Cable Incline Triceps Extension"
+  },
+  {
+    "id": "bd083e57-d124-4363-b058-451b51a4b09d",
+    "name": "Cable Internal Rotation"
+  },
+  {
+    "id": "aa107f26-e5de-487e-953b-e73429dc2d78",
+    "name": "Cable Iron Cross"
+  },
+  {
+    "id": "05c74476-58f5-4b22-b435-bc33e1fc8375",
+    "name": "Cable Judo Flip"
+  },
+  {
+    "id": "4d8c028d-785f-4909-8b92-4d65a721e339",
+    "name": "Cable Lying Triceps Extension"
+  },
+  {
+    "id": "0d33f8df-d4c7-4591-8f0d-4de52e124e25",
+    "name": "Cable One Arm Tricep Extension"
+  },
+  {
+    "id": "91e1bcc5-9af8-44f7-b3c3-a3a51d247142",
+    "name": "Cable Preacher Curl"
+  },
+  {
+    "id": "764e2c9f-6bb4-4622-9e37-7e8e0aa47e4c",
+    "name": "Cable Rear Delt Fly"
+  },
+  {
+    "id": "2b718eef-3d47-4cc4-87dc-b25f66a83160",
+    "name": "Cable Reverse Crunch"
+  },
+  {
+    "id": "be651cbe-315a-4639-bd7a-3e92a1e26a1f",
+    "name": "Cable Rope Overhead Triceps Extension"
+  },
+  {
+    "id": "394e6f1f-d29d-4bb7-91f2-25576c25a522",
+    "name": "Cable Rope Rear-Delt Rows"
+  },
+  {
+    "id": "21dd3ab0-132f-4c5d-b663-feaebe70eb83",
+    "name": "Cable Russian Twists"
+  },
+  {
+    "id": "0d8b8614-b180-4f47-b711-afc35b065d2d",
+    "name": "Cable Seated Crunch"
+  },
+  {
+    "id": "2dec1e11-d41f-4b55-b4d2-f17c053db0bc",
+    "name": "Cable Seated Lateral Raise"
+  },
+  {
+    "id": "ce5c1247-2906-4a0e-aa6b-cb1cd04a71cc",
+    "name": "Cable Shoulder Press"
+  },
+  {
+    "id": "20f030ef-3e00-4278-baef-2f62510ac437",
+    "name": "Cable Shrugs"
+  },
+  {
+    "id": "f4a217e9-a490-452e-ba53-bb0f88f8f646",
+    "name": "Cable Wrist Curl"
+  },
+  {
+    "id": "f5ac08dd-a107-463c-9ad0-e6538ecc5c15",
+    "name": "Calf-Machine Shoulder Shrug"
+  },
+  {
+    "id": "30030068-d3c7-44cc-aeba-f032d1b7ee8a",
+    "name": "Calf Press"
+  },
+  {
+    "id": "894cf3a7-7c54-4abe-8204-dfdff9c50b82",
+    "name": "Calf Press On The Leg Press Machine"
+  },
+  {
+    "id": "b0d08ce3-9aac-4ad3-8619-041bacf079a5",
+    "name": "Calf Raise On A Dumbbell"
+  },
+  {
+    "id": "59d8fb75-6d9a-4c4c-8902-cbfe8e0f87d7",
+    "name": "Calf Raises - With Bands"
+  },
+  {
+    "id": "f1d32f36-c1f1-4bb9-9bbe-d267cef4c8d0",
+    "name": "Car Drivers"
+  },
+  {
+    "id": "880391c0-9fac-4664-9a2e-5242967a1926",
+    "name": "Chain Handle Extension"
+  },
+  {
+    "id": "ec6f3f0a-87ae-46e4-a3a5-4a45a571a65a",
+    "name": "Chain Press"
+  },
+  {
+    "id": "64590b77-278e-491b-aa31-ec169da9be51",
+    "name": "Chair Squat"
+  },
+  {
+    "id": "e8296f11-bab4-42d1-a679-09b096219d90",
+    "name": "Chin-Up"
+  },
+  {
+    "id": "3c174525-8eec-4731-b442-19b7e9ab7a75",
+    "name": "Clean and Press"
+  },
+  {
+    "id": "f213c0a2-d382-4f46-b865-168cbbc2e0ea",
+    "name": "Clock Push-Up"
+  },
+  {
+    "id": "c827a8bd-794a-418d-b419-ba57994b72a6",
+    "name": "Close-Grip Barbell Bench Press"
+  },
+  {
+    "id": "9774fd44-696f-4df0-b95f-290217e7742c",
+    "name": "Close-Grip Dumbbell Press"
+  },
+  {
+    "id": "fff8302b-04b8-47aa-a2fa-afc990718806",
+    "name": "Close-Grip EZ-Bar Curl with Band"
+  },
+  {
+    "id": "a4fedbbb-8ab5-4631-a4c5-170059eb5efe",
+    "name": "Close-Grip EZ-Bar Press"
+  },
+  {
+    "id": "ab87862a-5d3f-43db-ba60-99ea8156ac09",
+    "name": "Close-Grip EZ Bar Curl"
+  },
+  {
+    "id": "6ce1786b-f236-4cba-9542-4ba219a9ba20",
+    "name": "Close-Grip Front Lat Pulldown"
+  },
+  {
+    "id": "3e4fc485-b43f-4bd7-a0b1-83818941621b",
+    "name": "Close-Grip Push-Up off of a Dumbbell"
+  },
+  {
+    "id": "c6137e64-3e53-460c-9b5c-f52113b60c14",
+    "name": "Close-Grip Standing Barbell Curl"
+  },
+  {
+    "id": "1ee89c0d-a273-45dd-8494-c38e41921cac",
+    "name": "Cocoons"
+  },
+  {
+    "id": "cbef9999-9b14-48d8-9262-9145a62a8f3e",
+    "name": "Concentration Curls"
+  },
+  {
+    "id": "4327d281-a255-456a-b1aa-170ed67883f0",
+    "name": "Cross-Body Crunch"
+  },
+  {
+    "id": "fe488aab-9be4-457e-ab6b-6c0eddf35739",
+    "name": "Cross Body Hammer Curl"
+  },
+  {
+    "id": "59790848-df1b-4f90-9ab7-1662d83f46be",
+    "name": "Cross Over - With Bands"
+  },
+  {
+    "id": "7004aa9d-d69d-4aac-8cdd-08af1d3d6a1b",
+    "name": "Crunch - Hands Overhead"
+  },
+  {
+    "id": "bf136a23-9f66-4525-8c31-1a9dac240053",
+    "name": "Crunch - Legs On Exercise Ball"
+  },
+  {
+    "id": "d47b31cd-0ebd-465c-9207-b1c4b04e1a35",
+    "name": "Crunches"
+  },
+  {
+    "id": "9e7e9ec7-fa4a-4da1-b35c-283b6eff340f",
+    "name": "Cuban Press"
+  },
+  {
+    "id": "38a98811-d999-4c4c-ab9a-c70e72d71f60",
+    "name": "Dead Bug"
+  },
+  {
+    "id": "cebaef21-c82c-4885-9ec4-e472b4fad5b7",
+    "name": "Deadlift with Bands"
+  },
+  {
+    "id": "bcb18328-ee48-4729-b5c5-a8ac2183ff36",
+    "name": "Deadlift with Chains"
+  },
+  {
+    "id": "2ff2d602-f12c-46ec-9619-afcf58af56d8",
+    "name": "Decline Barbell Bench Press"
+  },
+  {
+    "id": "7b4a2fcc-4a82-4d9b-b69e-b6afcdc00083",
+    "name": "Decline Close-Grip Bench To Skull Crusher"
+  },
+  {
+    "id": "38364b45-c0b9-4681-98fa-095f6faaefe6",
+    "name": "Decline Dumbbell Bench Press"
+  },
+  {
+    "id": "edb2b917-ce2e-4f46-804a-7c6fd565b600",
+    "name": "Decline Dumbbell Flyes"
+  },
+  {
+    "id": "1e43bde0-69c6-45eb-a23d-6f9476f2afae",
+    "name": "Decline Dumbbell Triceps Extension"
+  },
+  {
+    "id": "2a1b66a6-42eb-482b-956d-96db49be7573",
+    "name": "Decline EZ Bar Triceps Extension"
+  },
+  {
+    "id": "1be6b5c9-8e8f-4056-b6a1-fab65546a860",
+    "name": "Decline Oblique Crunch"
+  }
+]

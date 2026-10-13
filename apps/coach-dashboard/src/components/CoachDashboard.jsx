@@ -614,7 +614,7 @@ export default function CoachDashboard({
                 />
               </div>
 
-              {/* Prescribir Suplemento vinculado a Strength Fit */}
+              {/* Prescribir Suplemento vinculado a Strength Fit (Comentado temporalmente por solicitud del usuario)
               <div className="md:col-span-7">
                 <label className="block text-xs font-bold text-amber-600 dark:text-orange-400 mb-1.5 flex items-center gap-1.5">
                   <Pill className="w-3.5 h-3.5" />
@@ -642,6 +642,7 @@ export default function CoachDashboard({
                   </select>
                 </div>
               </div>
+              */}
             </div>
 
             {/* Quick Exercise Library Search & Add */}

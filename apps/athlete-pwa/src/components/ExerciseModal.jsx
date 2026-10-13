@@ -4,7 +4,31 @@ import { X, ExternalLink, Info, CheckCircle2 } from 'lucide-react';
 export default function ExerciseModal({ exercise, onClose }) {
   if (!exercise) return null;
 
-  const isVideo = exercise.videoUrl && (exercise.videoUrl.includes('youtube') || exercise.videoUrl.includes('vimeo'));
+  const [currentFrame, setCurrentFrame] = React.useState(0);
+  const [isPlaying, setIsPlaying] = React.useState(true);
+
+  // Generar frames de animación dinámica a partir de la URL base
+  const frames = React.useMemo(() => {
+    if (!exercise.videoUrl) return [];
+    if (exercise.videoUrl.includes('/0.jpg')) {
+      return [
+        exercise.videoUrl,
+        exercise.videoUrl.replace('/0.jpg', '/1.jpg')
+      ];
+    }
+    return [exercise.videoUrl];
+  }, [exercise.videoUrl]);
+
+  // Reproductor cíclico de movimiento tipo video/loop
+  React.useEffect(() => {
+    if (frames.length <= 1 || !isPlaying) return;
+    const interval = setInterval(() => {
+      setCurrentFrame(prev => (prev === 0 ? 1 : 0));
+    }, 900); // 900ms por fase (concéntrica / excéntrica)
+    return () => clearInterval(interval);
+  }, [frames, isPlaying]);
+
+  const isVideo = exercise.videoUrl && (exercise.videoUrl.includes('youtube') || exercise.videoUrl.includes('vimeo') || exercise.videoUrl.endsWith('.mp4'));
   const isImage = exercise.videoUrl && (exercise.videoUrl.endsWith('.jpg') || exercise.videoUrl.endsWith('.png') || exercise.videoUrl.includes('free-exercise-db') || exercise.videoUrl.startsWith('http'));
 
   return (
@@ -13,8 +37,9 @@ export default function ExerciseModal({ exercise, onClose }) {
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950/60">
           <div>
-            <div className="inline-block text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-amber-400 bg-emerald-50 dark:bg-amber-500/10 px-2.5 py-0.5 rounded-full mb-1 border border-emerald-200/60 dark:border-amber-500/30">
-              Guía Técnica Team HD
+            <div className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-amber-400 bg-emerald-50 dark:bg-amber-500/10 px-2.5 py-0.5 rounded-full mb-1 border border-emerald-200/60 dark:border-amber-500/30">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block" />
+              <span>Video Demostración HD</span>
             </div>
             <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
               {exercise.name}
@@ -28,8 +53,8 @@ export default function ExerciseModal({ exercise, onClose }) {
           </button>
         </div>
 
-        {/* Media Player: Muestra de video o Fotografía Real del Ejercicio */}
-        <div className="relative aspect-video w-full bg-slate-100 dark:bg-zinc-950 flex items-center justify-center overflow-hidden">
+        {/* Media Player: Video o Video-Loop de Movimiento */}
+        <div className="relative aspect-video w-full bg-slate-950 flex items-center justify-center overflow-hidden group">
           {isVideo ? (
             <iframe
               src={exercise.videoUrl}
@@ -39,11 +64,20 @@ export default function ExerciseModal({ exercise, onClose }) {
               allowFullScreen
             />
           ) : isImage ? (
-            <img 
-              src={exercise.videoUrl} 
-              alt={exercise.name} 
-              className="w-full h-full object-contain bg-slate-950"
-            />
+            <div className="relative w-full h-full flex items-center justify-center bg-zinc-950">
+              <img 
+                src={frames[currentFrame] || exercise.videoUrl} 
+                alt={`${exercise.name} fase ${currentFrame + 1}`} 
+                className="w-full h-full object-contain transition-opacity duration-300"
+              />
+              {/* Badge indicador de fase biomecánica */}
+              {frames.length > 1 && (
+                <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-lg text-[10px] font-bold text-white flex items-center gap-1.5 border border-white/20">
+                  <span className={`w-1.5 h-1.5 rounded-full ${currentFrame === 0 ? 'bg-amber-400' : 'bg-emerald-400'}`} />
+                  <span>{currentFrame === 0 ? 'Fase Inicial / Descenso' : 'Fase Concéntrica / Contracción'}</span>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="flex flex-col items-center justify-center h-full text-slate-400 dark:text-zinc-500 gap-2 p-6 text-center">
               <Info className="w-8 h-8 text-emerald-600 dark:text-amber-500" />

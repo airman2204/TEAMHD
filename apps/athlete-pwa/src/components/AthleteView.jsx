@@ -104,6 +104,62 @@ export default function AthleteView({
     setTimeout(() => setSessionSavedNotice(null), 5000);
   };
 
+  // Marcar el siguiente ejercicio como listo desde el reloj
+  const handleMarkNextCompletedFromWatch = () => {
+    const uncompleted = currentRoutineDay.exercises.find(e => !e.completed);
+    if (uncompleted) {
+      onUpdateRoutineExercise(selectedDay, uncompleted.id, { completed: true });
+      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+        navigator.vibrate([200, 100, 200]);
+      }
+    }
+  };
+
+  // CONTROL MULTIMEDIA BLUETOOTH EN HONOR WATCH / SMARTWATCH
+  React.useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+
+    if (isSessionActive) {
+      const completedCount = currentRoutineDay.exercises.filter(e => e.completed).length;
+      const totalCount = currentRoutineDay.exercises.length;
+
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `⏱️ ${formatTimer(sessionSeconds)} • ${selectedDay}`,
+        artist: `Listo: ${completedCount}/${totalCount} Ejercicios`,
+        album: "Team HD • Control Smartwatch",
+        artwork: [
+          { src: "/favicon.svg", sizes: "96x96", type: "image/svg+xml" },
+          { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" }
+        ]
+      });
+
+      navigator.mediaSession.playbackState = "playing";
+
+      // Botón Play / Pausa en el reloj -> Pausar / Reanudar Cronómetro
+      navigator.mediaSession.setActionHandler('play', () => {
+        setIsSessionActive(true);
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        setIsSessionActive(false);
+      });
+
+      // Botón Siguiente (⏭️) en el reloj -> Marcar Siguiente Ejercicio como Listo ✓
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        handleMarkNextCompletedFromWatch();
+      });
+
+      // Botón Anterior (⏮️) en el reloj -> Reiniciar Cronómetro
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        setSessionSeconds(0);
+      });
+
+      // Botón Detener -> Finalizar sesión
+      navigator.mediaSession.setActionHandler('stop', () => {
+        handleFinishAndSaveSession();
+      });
+    }
+  }, [isSessionActive, sessionSeconds, currentRoutineDay.exercises, selectedDay]);
+
   // Profile local state
   // Parse structured data if exists
   const initialData = React.useMemo(() => {
@@ -338,6 +394,16 @@ export default function AthleteView({
                   )}
                 </div>
 
+                {/* Smartwatch Control Live Hint */}
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                  <span className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
+                    <span>⌚ Control Smartwatch / Reloj Activo</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">
+                    ⏯️ Pausa/Play | ⏭️ Marcar Listo
+                  </span>
+                </div>
+
                 {/* Notificación de Guardado */}
                 {sessionSavedNotice && (
                   <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-2 animate-in fade-in">
@@ -407,7 +473,7 @@ export default function AthleteView({
                   </span>
                 </div>
 
-                {/* Supplement Prescribed Banner */}
+                {/* Supplement Prescribed Banner (Comentado temporalmente por solicitud del usuario)
                 {currentRoutineDay.supplementPrescription && (
                   <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-start gap-2 text-xs text-amber-900 dark:text-orange-300 bg-amber-50/70 dark:bg-orange-500/5 p-2.5 rounded-xl border border-amber-200 dark:border-orange-500/20">
                     <Pill className="w-4 h-4 text-amber-600 dark:text-orange-400 shrink-0 mt-0.5" />
@@ -417,6 +483,7 @@ export default function AthleteView({
                     </div>
                   </div>
                 )}
+                */}
               </div>
 
               {/* Exercises List */}
