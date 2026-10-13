@@ -147,6 +147,47 @@ export default function App() {
     }
 
     loadCloudData();
+
+    // Suscripción Realtime para escuchar cambios en los atletas en vivo
+    let channel = null;
+    if (supabase) {
+      channel = supabase
+        .channel('athletes_realtime_changes')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'athletes' },
+          (payload) => {
+            console.log('Cambio detectado en atletas:', payload);
+            if (payload.eventType === 'UPDATE' && payload.new) {
+              setStudents(prev => prev.map(s => {
+                if (s.id === payload.new.id) {
+                  return {
+                    ...s,
+                    name: payload.new.full_name || s.name,
+                    phone: payload.new.phone || s.phone,
+                    weight: payload.new.weight_kg !== null ? payload.new.weight_kg : s.weight,
+                    height: payload.new.height_cm !== null ? payload.new.height_cm : s.height,
+                    goal: payload.new.goal || s.goal,
+                    injuries: payload.new.injuries_notes || s.injuries,
+                    status: payload.new.is_active ? 'Activo' : 'Inactivo',
+                    avatar: payload.new.avatar_url || s.avatar
+                  };
+                }
+                return s;
+              }));
+            } else if (payload.eventType === 'INSERT' && payload.new) {
+              loadCloudData();
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    return () => {
+      if (channel && supabase) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, [currentUser]);
 
   // LOGIN HANDLER: Garantiza 1 sola sesión activa

@@ -217,8 +217,30 @@ export default function App() {
     setIsChangePasswordModalOpen(false);
   };
 
-  const handleUpdateAthlete = (updated) => {
+  const handleUpdateAthlete = async (updated) => {
     setAthlete(updated);
+
+    if (supabase && updated?.id) {
+      try {
+        const { error } = await supabase
+          .from('athletes')
+          .update({
+            weight_kg: parseFloat(updated.weight) || null,
+            height_cm: parseFloat(updated.height) || null,
+            goal: updated.goal || 'Hipertrofia',
+            injuries_notes: updated.injuries || 'Sin lesiones'
+          })
+          .eq('id', updated.id);
+
+        if (error) {
+          console.error('Error al persistir cambios del atleta en Supabase:', error);
+        } else {
+          console.log('Ficha de atleta sincronizada con éxito en Supabase');
+        }
+      } catch (err) {
+        console.error('Error al actualizar datos en Supabase:', err);
+      }
+    }
   };
 
   const handleUpdateRoutineExercise = async (day, exerciseId, fields) => {
