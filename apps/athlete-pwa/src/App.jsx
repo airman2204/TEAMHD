@@ -135,10 +135,20 @@ export default function App() {
                   id: item.id,
                   exerciseId: item.exercise_id,
                   name: item.exercises?.name || 'Ejercicio',
-                  series: `${item.target_sets}x${item.target_reps}`,
+                  series: `${item.target_sets || 4}x${item.target_reps || '10-12'}`,
+                  targetSets: item.target_sets || 4,
+                  targetReps: item.target_reps || '10-12',
                   restSeconds: item.rest_seconds || 90,
                   prescribedWeight: item.target_weight_kg || 0,
                   loggedWeight: 0,
+                  setsLog: Array.from({ length: item.target_sets || 4 }, (_, idx) => ({
+                    setNumber: idx + 1,
+                    prescribedReps: item.target_reps || '10-12',
+                    prescribedWeight: item.target_weight_kg || 0,
+                    actualWeight: item.target_weight_kg || 0,
+                    actualReps: parseInt(item.target_reps) || 10,
+                    completed: false
+                  })),
                   completed: false,
                   feedback: '',
                   videoUrl: item.exercises?.video_url || ''

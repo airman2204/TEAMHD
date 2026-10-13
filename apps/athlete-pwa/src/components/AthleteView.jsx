@@ -588,42 +588,126 @@ export default function AthleteView({
 
                       {/* Weight Log & Notes Input */}
                       <div className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-1 gap-2.5">
-                        {/* Peso Sugerido vs Peso Real */}
-                        <div className="grid grid-cols-2 gap-2">
-                          <div className="bg-emerald-50/70 dark:bg-emerald-500/10 p-2.5 rounded-2xl border border-emerald-200/80 dark:border-emerald-500/20 flex flex-col justify-center">
-                            <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400">
-                              🎯 Peso Sugerido
-                            </span>
-                            <div className="flex items-baseline gap-1 mt-0.5">
-                              <span className="text-base font-black text-slate-900 dark:text-white font-mono">
-                                {ex.prescribedWeight || 0}
-                              </span>
-                              <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">kg</span>
-                            </div>
-                          </div>
+                        
+                        {/* DESGLOSE Y REGISTRO DETALLADO POR CADA SERIE PRESCRITA */}
+                        {(() => {
+                          const targetSetsCount = parseInt(ex.series?.split('x')[0]) || ex.targetSets || 4;
+                          const targetRepsText = ex.series?.split('x')[1] || ex.targetReps || '10-12';
+                          
+                          // Construir o leer el array de series
+                          const sets = ex.setsLog && ex.setsLog.length === targetSetsCount
+                            ? ex.setsLog
+                            : Array.from({ length: targetSetsCount }, (_, sIdx) => ({
+                                setNumber: sIdx + 1,
+                                prescribedWeight: ex.prescribedWeight || 0,
+                                prescribedReps: targetRepsText,
+                                actualWeight: ex.loggedWeight || ex.prescribedWeight || 0,
+                                actualReps: parseInt(targetRepsText) || 10,
+                                completed: false
+                              }));
 
-                          <div className="bg-slate-50 dark:bg-zinc-950/60 p-2.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 flex flex-col justify-center">
-                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400">
-                              ⚖️ Peso Real Log
-                            </span>
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <input
-                                type="number"
-                                step="0.5"
-                                value={ex.loggedWeight !== undefined && ex.loggedWeight !== 0 ? ex.loggedWeight : ""}
-                                placeholder={ex.prescribedWeight ? `${ex.prescribedWeight}` : "0"}
-                                onChange={(e) => {
-                                  const val = parseFloat(e.target.value) || 0;
-                                  onUpdateRoutineExercise(selectedDay, ex.id, {
-                                    loggedWeight: val
-                                  });
-                                }}
-                                className="w-full px-2 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 shadow-2xs"
-                              />
-                              <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">kg</span>
+                          const handleUpdateSet = (setIndex, updatedFields) => {
+                            const newSets = sets.map((s, idx) => idx === setIndex ? { ...s, ...updatedFields } : s);
+                            const allDone = newSets.every(s => s.completed);
+                            const latestWeight = newSets[setIndex].actualWeight || ex.loggedWeight;
+                            
+                            onUpdateRoutineExercise(selectedDay, ex.id, {
+                              setsLog: newSets,
+                              completed: allDone,
+                              loggedWeight: latestWeight
+                            });
+                          };
+
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300 px-1">
+                                <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
+                                  <span>📋 Registro por Serie ({targetSetsCount} Series Prescritas)</span>
+                                </span>
+                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
+                                  Meta: {targetRepsText} reps
+                                </span>
+                              </div>
+
+                              {/* Tabla responsiva de series */}
+                              <div className="bg-slate-50/80 dark:bg-zinc-950/70 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden divide-y divide-slate-200/60 dark:divide-zinc-800/70">
+                                {sets.map((set, sIdx) => (
+                                  <div 
+                                    key={sIdx}
+                                    className={`px-3 py-2 flex items-center justify-between gap-2 transition-colors ${
+                                      set.completed ? 'bg-emerald-50/40 dark:bg-emerald-950/20' : ''
+                                    }`}
+                                  >
+                                    {/* Indicador de Serie */}
+                                    <div className="flex items-center gap-2">
+                                      <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black font-mono ${
+                                        set.completed
+                                          ? 'bg-emerald-600 text-white'
+                                          : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'
+                                      }`}>
+                                        S{set.setNumber}
+                                      </span>
+                                      <div className="flex flex-col">
+                                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500">
+                                          Sugerido
+                                        </span>
+                                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-mono">
+                                          {ex.prescribedWeight || 0} kg
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* Inputs Peso Real y Reps Reales */}
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex items-center gap-1">
+                                        <input
+                                          type="number"
+                                          step="0.5"
+                                          value={set.actualWeight !== undefined && set.actualWeight !== 0 ? set.actualWeight : ""}
+                                          placeholder={ex.prescribedWeight ? `${ex.prescribedWeight}` : "0"}
+                                          onChange={(e) => {
+                                            const val = parseFloat(e.target.value) || 0;
+                                            handleUpdateSet(sIdx, { actualWeight: val });
+                                          }}
+                                          className="w-16 px-1.5 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
+                                        />
+                                        <span className="text-[10px] font-bold text-slate-400">kg</span>
+                                      </div>
+
+                                      <div className="flex items-center gap-1">
+                                        <input
+                                          type="number"
+                                          value={set.actualReps !== undefined ? set.actualReps : ""}
+                                          placeholder={parseInt(targetRepsText) || "10"}
+                                          onChange={(e) => {
+                                            const val = parseInt(e.target.value) || 0;
+                                            handleUpdateSet(sIdx, { actualReps: val });
+                                          }}
+                                          className="w-12 px-1 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
+                                        />
+                                        <span className="text-[10px] font-bold text-slate-400">reps</span>
+                                      </div>
+
+                                      {/* Check botón de la serie */}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUpdateSet(sIdx, { completed: !set.completed })}
+                                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                                          set.completed
+                                            ? 'bg-emerald-600 text-white shadow-xs'
+                                            : 'bg-white dark:bg-zinc-800 text-slate-400 border border-slate-200 dark:border-zinc-700 hover:border-emerald-500'
+                                        }`}
+                                        title={set.completed ? "Serie completada" : "Marcar serie lista"}
+                                      >
+                                        <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                      </button>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                          </div>
-                        </div>
+                          );
+                        })()}
 
                         <div className="space-y-1">
                           <input
