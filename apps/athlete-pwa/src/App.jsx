@@ -33,19 +33,30 @@ export default function App() {
 
   // 1. VERIFICAR SESIÓN ACTIVA Y CONTROL DE CONCURRENCIA (1 SESIÓN VIVA)
   useEffect(() => {
+    let isMounted = true;
+
     async function verifyAthleteSession() {
       if (!isSupabaseConfigured || !supabase) {
-        setIsAuthChecking(false);
+        if (isMounted) setIsAuthChecking(false);
         return;
       }
 
+      // Timeout de seguridad: si Supabase tarda más de 2.5 segundos, pasar a login sin congelar la app
+      const timeoutId = setTimeout(() => {
+        if (isMounted) {
+          console.warn('Timeout de verificación de sesión alcanzado. Pasando a login.');
+          setIsAuthChecking(false);
+        }
+      }, 2500);
+
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session && session.user) {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        clearTimeout(timeoutId);
+
+        if (session && session.user && isMounted) {
           const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
           const serverToken = session.user.user_metadata?.active_session_token;
 
-          // Si el token del navegador no coincide con el último emitido en el servidor, se desloguea
           if (serverToken && localToken && serverToken !== localToken) {
             console.warn('Sesión de atleta expirada: se inició sesión en otro dispositivo.');
             await supabase.auth.signOut();
@@ -59,9 +70,10 @@ export default function App() {
           }
         }
       } catch (err) {
+        clearTimeout(timeoutId);
         console.error('Error verificando sesión de atleta:', err);
       } finally {
-        setIsAuthChecking(false);
+        if (isMounted) setIsAuthChecking(false);
       }
     }
 
