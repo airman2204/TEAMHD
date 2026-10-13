@@ -35,13 +35,31 @@ export default function CoachDashboard({
   const [selectedDay, setSelectedDay] = React.useState("Lun");
   const [isNewStudentModalOpen, setIsNewStudentModalOpen] = React.useState(false);
   const [newStudentForm, setNewStudentForm] = React.useState({
-    name: "",
+    firstName: "",
+    lastNameFather: "",
+    lastNameMother: "",
     phone: "",
     email: ""
   });
   const [magicLinkNotice, setMagicLinkNotice] = React.useState(null);
   const [isSubmittingStudent, setIsSubmittingStudent] = React.useState(false);
   const [studentError, setStudentError] = React.useState(null);
+
+  // Normaliza el teléfono: si tiene 10 dígitos (típico en México), le añade automáticamente +52
+  const formatPhoneWithCountryCode = (rawPhone) => {
+    if (!rawPhone) return "";
+    const cleanDigits = rawPhone.replace(/\D/g, "");
+    if (cleanDigits.length === 10) {
+      return `+52${cleanDigits}`;
+    }
+    if (cleanDigits.length === 12 && cleanDigits.startsWith("52")) {
+      return `+${cleanDigits}`;
+    }
+    if (!rawPhone.trim().startsWith("+")) {
+      return `+${cleanDigits}`;
+    }
+    return `+${cleanDigits}`;
+  };
 
   // Routine builder temporary edit state
   const selectedStudent = students.find((s) => s.id === selectedStudentId) || students[0];
@@ -75,12 +93,23 @@ export default function CoachDashboard({
   // Handle Add Student Submit
   const handleCreateStudent = async (e) => {
     e.preventDefault();
-    if (!newStudentForm.name || !newStudentForm.email) return;
+    const fullName = [newStudentForm.firstName, newStudentForm.lastNameFather, newStudentForm.lastNameMother]
+      .map(s => s.trim())
+      .filter(Boolean)
+      .join(" ");
+
+    if (!fullName || !newStudentForm.email) return;
+
+    const normalizedPhone = formatPhoneWithCountryCode(newStudentForm.phone);
 
     try {
       setIsSubmittingStudent(true);
       setStudentError(null);
-      const created = await onAddStudent(newStudentForm);
+      const created = await onAddStudent({
+        name: fullName,
+        phone: normalizedPhone,
+        email: newStudentForm.email.trim()
+      });
       if (created) {
         setSelectedStudentId(created.id);
         setIsNewStudentModalOpen(false);
@@ -90,7 +119,7 @@ export default function CoachDashboard({
           phone: created.phone,
           tempPassword: created.tempPassword
         });
-        setNewStudentForm({ name: "", phone: "", email: "" });
+        setNewStudentForm({ firstName: "", lastNameFather: "", lastNameMother: "", phone: "", email: "" });
       }
     } catch (err) {
       console.error("Error al crear alumno:", err);
@@ -651,30 +680,61 @@ export default function CoachDashboard({
                 </div>
               )}
 
+              {/* Campos de Nombre Separados */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
-                  Nombre Completo del Alumno *
+                  Nombre(s) *
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="Ej. Marco Antonio Solís"
-                  value={newStudentForm.name}
-                  onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
+                  placeholder="Ej. Juan Carlos"
+                  value={newStudentForm.firstName}
+                  onChange={(e) => setNewStudentForm({ ...newStudentForm, firstName: e.target.value })}
                   className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
                 />
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+                    Apellido Paterno *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej. Hernández"
+                    value={newStudentForm.lastNameFather}
+                    onChange={(e) => setNewStudentForm({ ...newStudentForm, lastNameFather: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
+                    Apellido Materno
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej. Pérez (opcional)"
+                    value={newStudentForm.lastNameMother}
+                    onChange={(e) => setNewStudentForm({ ...newStudentForm, lastNameMother: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
+                  />
+                </div>
+              </div>
+
+              {/* Teléfono WhatsApp con autocompletado de lada */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
-                  Número de WhatsApp (con código de país) *
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5 flex items-center justify-between">
+                  <span>Número de WhatsApp *</span>
+                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-normal">Detecta lada automáticamente (ej. 10 dígitos)</span>
                 </label>
                 <div className="relative">
                   <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-3" />
                   <input
                     type="tel"
                     required
-                    placeholder="+52 55 1234 5678"
+                    placeholder="55 1234 5678"
                     value={newStudentForm.phone}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
                     className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 font-mono transition-colors"
