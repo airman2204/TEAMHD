@@ -49,8 +49,12 @@ export default function App() {
         clearTimeout(timeoutId);
 
         if (session && session.user && isMounted) {
+          // Obtener usuario fresco del servidor para verificar si otro dispositivo generó un nuevo token
+          const { data: freshUserRes } = await supabase.auth.getUser();
+          const freshUser = freshUserRes?.user || session.user;
+
           const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
-          const serverToken = session.user.user_metadata?.active_session_token;
+          const serverToken = freshUser.user_metadata?.active_session_token;
 
           if (serverToken && localToken && serverToken !== localToken) {
             console.warn('Sesión de atleta expirada: se inició sesión en otro dispositivo.');
@@ -59,9 +63,9 @@ export default function App() {
             setCurrentUser(null);
             setAthlete(null);
           } else {
-            setCurrentUser(session.user);
-            setMustChangePassword(Boolean(session.user.user_metadata?.must_change_password));
-            await loadAthleteProfile(session.user);
+            setCurrentUser(freshUser);
+            setMustChangePassword(Boolean(freshUser.user_metadata?.must_change_password));
+            await loadAthleteProfile(freshUser);
           }
         }
       } catch (err) {
@@ -73,6 +77,27 @@ export default function App() {
     }
 
     verifyAthleteSession();
+
+    // Comprobación concurrente cuando el usuario regresa a la pestaña o abre la app
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        const { data: freshUserRes } = await supabase.auth.getUser();
+        if (freshUserRes?.user) {
+          const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
+          const serverToken = freshUserRes.user.user_metadata?.active_session_token;
+          if (serverToken && localToken && serverToken !== localToken) {
+            alert('Has iniciado sesión en otro dispositivo. Esta sesión se cerrará automáticamente.');
+            await supabase.auth.signOut();
+            localStorage.removeItem(ATHLETE_SESSION_KEY);
+            setCurrentUser(null);
+            setAthlete(null);
+          }
+        }
+      }
+    };
+
+    window.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
 
     const { data: authListener } = supabase?.auth.onAuthStateChange(async (event, session) => {
       if (event === 'SIGNED_OUT') {
@@ -87,6 +112,8 @@ export default function App() {
     }) || { data: { subscription: { unsubscribe: () => {} } } };
 
     return () => {
+      window.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
       authListener.subscription?.unsubscribe();
     };
   }, []);
@@ -367,9 +394,17 @@ export default function App() {
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] flex flex-col items-center justify-center p-4">
-        <div className="w-8 h-8 border-3 border-emerald-600 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs font-bold text-slate-500 dark:text-zinc-400 mt-3">Validando sesión de App Gym...</span>
+      <div className="min-h-screen bg-[#09090b] flex flex-col items-center justify-center p-4 select-none">
+        <div className="relative flex items-center justify-center">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center animate-pulse shadow-lg shadow-emerald-500/20">
+            <span className="font-black text-xl text-emerald-400">AG</span>
+          </div>
+          <div className="absolute inset-0 w-16 h-16 rounded-3xl border-2 border-emerald-500 border-t-transparent animate-spin" />
+        </div>
+        <div className="text-center mt-5 space-y-1">
+          <h3 className="text-sm font-black text-white tracking-wider">APP GYM • TEAM HD</h3>
+          <p className="text-[11px] font-medium text-zinc-400 animate-pulse">Sincronizando entrenamiento y perfil...</p>
+        </div>
       </div>
     );
   }

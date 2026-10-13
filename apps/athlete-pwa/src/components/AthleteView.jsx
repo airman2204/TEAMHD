@@ -66,6 +66,18 @@ export default function AthleteView({
   const [sessionSeconds, setSessionSeconds] = React.useState(0);
   const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
 
+  // Reproductor de audio silencioso en segundo plano para enlazar reloj por Bluetooth
+  const audioRef = React.useRef(null);
+
+  const getAudio = () => {
+    if (!audioRef.current && typeof window !== 'undefined') {
+      const a = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
+      a.loop = true;
+      audioRef.current = a;
+    }
+    return audioRef.current;
+  };
+
   React.useEffect(() => {
     let interval = null;
     if (isSessionActive) {
@@ -85,12 +97,24 @@ export default function AthleteView({
   };
 
   const handleToggleSession = () => {
-    setIsSessionActive(!isSessionActive);
+    const nextState = !isSessionActive;
+    setIsSessionActive(nextState);
+
+    // Si se activa y no está en modo música, arrancar audio para sincronizar el reloj
+    if (nextState && !isMusicMode) {
+      const a = getAudio();
+      if (a) a.play().catch(() => {});
+    } else {
+      const a = getAudio();
+      if (a) a.pause();
+    }
   };
 
   const handleResetSession = () => {
     setIsSessionActive(false);
     setSessionSeconds(0);
+    const a = getAudio();
+    if (a) a.pause();
   };
 
   const handleFinishAndSaveSession = () => {
@@ -241,8 +265,8 @@ export default function AthleteView({
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100 w-full relative pb-20 transition-colors">
-      {/* Top Header App Brand Real (Sticky Mobile Header) */}
-      <header className="sticky top-0 z-30 px-4 py-3 bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between shadow-2xs transition-colors">
+      {/* Top Header App Brand Real (Sticky Mobile Header con soporte Dynamic Island / Notch) */}
+      <header className="sticky top-0 z-30 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between shadow-2xs transition-colors">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white text-xs shadow-md shadow-emerald-600/20">
               AG
