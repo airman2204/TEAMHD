@@ -82,27 +82,9 @@ export default function AthleteView({
   const totalCartItems = cart.reduce((acc, item) => acc + item.qty, 0);
 
   return (
-    <div className="flex justify-center items-start min-h-screen py-4 px-2 sm:px-4">
-      {/* Phone Mockup Frame */}
-      <div className="w-full max-w-[420px] bg-zinc-950 border-4 border-zinc-800/90 rounded-[44px] shadow-2xl overflow-hidden relative flex flex-col min-h-[850px] ring-1 ring-zinc-700/50">
-        
-        {/* Dynamic Island / Notch */}
-        <div className="h-7 bg-black w-full flex items-center justify-center relative pt-1 z-30 select-none">
-          <div className="w-24 h-4 bg-zinc-900 rounded-full flex items-center justify-between px-2">
-            <div className="w-2 h-2 rounded-full bg-zinc-700" />
-            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 animate-pulse" />
-          </div>
-          <span className="absolute left-6 top-1 text-[11px] font-semibold text-zinc-400">9:41</span>
-          <div className="absolute right-6 top-1 flex items-center gap-1 text-[11px] text-zinc-400">
-            <span>5G</span>
-            <div className="w-4 h-2 border border-zinc-400 rounded-xs p-0.5 flex">
-              <div className="h-full w-3 bg-white rounded-xs" />
-            </div>
-          </div>
-        </div>
-
-        {/* Top Header App Brand */}
-        <div className="px-4 py-3 bg-gradient-to-b from-zinc-900 to-zinc-950 border-b border-zinc-800/80 flex items-center justify-between z-20">
+    <div className="flex flex-col min-h-screen bg-[#09090b] text-zinc-100 w-full relative pb-20">
+      {/* Top Header App Brand Real (Sticky Mobile Header) */}
+      <header className="sticky top-0 z-30 px-4 py-3 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-black text-black text-sm shadow-md shadow-amber-500/20">
               HD
@@ -134,10 +116,10 @@ export default function AthleteView({
               <img src={athlete.avatar} alt={athlete.name} className="w-full h-full object-cover" />
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Main Content Area (Scrollable) */}
-        <div className="flex-1 overflow-y-auto pb-24 px-4 pt-3 space-y-4">
+        {/* Main Content Area (Mobile Viewport Responsivo) */}
+        <div className="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 pb-28 space-y-4">
           
           {/* TAB 1: WORKOUT & RUTINA */}
           {activeTab === 'workout' && (
@@ -612,12 +594,12 @@ export default function AthleteView({
 
         </div>
 
-        {/* Bottom PWA Navigation Bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-18 bg-zinc-950/95 backdrop-blur-md border-t border-zinc-800/80 px-6 flex items-center justify-around z-30">
+        {/* Bottom PWA Navigation Bar Nativa (Fixed Bottom) */}
+        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-800/80 px-6 flex items-center justify-around z-40 max-w-2xl mx-auto">
           <button
             onClick={() => setActiveTab('workout')}
             className={`flex flex-col items-center gap-1 py-1 transition-all ${
-              activeTab === 'workout' ? 'text-amber-400 scale-105' : 'text-zinc-500 hover:text-zinc-300'
+              activeTab === 'workout' ? 'text-amber-400 scale-105 font-bold' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             <Dumbbell className="w-5 h-5" />
@@ -627,7 +609,7 @@ export default function AthleteView({
           <button
             onClick={() => setActiveTab('profile')}
             className={`flex flex-col items-center gap-1 py-1 transition-all ${
-              activeTab === 'profile' ? 'text-amber-400 scale-105' : 'text-zinc-500 hover:text-zinc-300'
+              activeTab === 'profile' ? 'text-amber-400 scale-105 font-bold' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             <User className="w-5 h-5" />
@@ -637,7 +619,7 @@ export default function AthleteView({
           <button
             onClick={() => setActiveTab('store')}
             className={`flex flex-col items-center gap-1 py-1 transition-all relative ${
-              activeTab === 'store' ? 'text-orange-400 scale-105' : 'text-zinc-500 hover:text-zinc-300'
+              activeTab === 'store' ? 'text-orange-400 scale-105 font-bold' : 'text-zinc-500 hover:text-zinc-300'
             }`}
           >
             <ShoppingBag className="w-5 h-5" />
@@ -646,11 +628,7 @@ export default function AthleteView({
               <span className="absolute -top-1 right-2 w-2 h-2 rounded-full bg-orange-500" />
             )}
           </button>
-        </div>
-
-        {/* Mobile Home Indicator bar */}
-        <div className="absolute bottom-1 left-1/2 -translate-x-1/2 w-32 h-1 bg-zinc-700 rounded-full z-40 pointer-events-none" />
-      </div>
+        </nav>
 
       {/* Exercise Video/Technique Modal */}
       {selectedExerciseForModal && (
