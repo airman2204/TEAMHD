@@ -19,7 +19,12 @@ import {
   ArrowRight,
   TrendingUp,
   MapPin,
-  MessageSquare
+  MessageSquare,
+  Play,
+  Pause,
+  RotateCcw,
+  Timer as TimerIcon,
+  Award
 } from 'lucide-react';
 import RestTimer from './RestTimer';
 import ExerciseModal from './ExerciseModal';
@@ -32,6 +37,7 @@ export default function AthleteView({
   onUpdateAthlete,
   routines,
   onUpdateRoutineExercise,
+  onSaveWorkoutSession,
   appointments,
   products,
   cart,
@@ -44,6 +50,59 @@ export default function AthleteView({
   const [activeTab, setActiveTab] = React.useState('workout'); // 'workout' | 'profile' | 'store'
   const [selectedDay, setSelectedDay] = React.useState('Lun');
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
+
+  // Sesión de entrenamiento activo (cronómetro global)
+  const [isSessionActive, setIsSessionActive] = React.useState(false);
+  const [sessionSeconds, setSessionSeconds] = React.useState(0);
+  const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
+
+  React.useEffect(() => {
+    let interval = null;
+    if (isSessionActive) {
+      interval = setInterval(() => {
+        setSessionSeconds(prev => prev + 1);
+      }, 1000);
+    }
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [isSessionActive]);
+
+  const formatTimer = (totalSec) => {
+    const mins = Math.floor(totalSec / 60);
+    const secs = totalSec % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleToggleSession = () => {
+    setIsSessionActive(!isSessionActive);
+  };
+
+  const handleResetSession = () => {
+    setIsSessionActive(false);
+    setSessionSeconds(0);
+  };
+
+  const handleFinishAndSaveSession = () => {
+    if (sessionSeconds === 0) return;
+    setIsSessionActive(false);
+    const completedCount = currentRoutineDay.exercises.filter(e => e.completed).length;
+    const totalCount = currentRoutineDay.exercises.length;
+    const formatted = formatTimer(sessionSeconds);
+
+    if (onSaveWorkoutSession) {
+      onSaveWorkoutSession({
+        day: selectedDay,
+        durationSeconds: sessionSeconds,
+        durationFormatted: formatted,
+        completedCount,
+        totalExercises: totalCount
+      });
+    }
+
+    setSessionSavedNotice(`¡Entrenamiento finalizado! Tiempo total guardado: ${formatted}`);
+    setTimeout(() => setSessionSavedNotice(null), 5000);
+  };
 
   // Profile local state
   // Parse structured data if exists
@@ -208,6 +267,86 @@ export default function AthleteView({
                 </div>
               )}
 
+              {/* CRONÓMETRO DE SESIÓN ACTIVA & TIEMPO TOTAL DE ENTRENAMIENTO */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-white to-slate-50 dark:from-zinc-900 dark:to-zinc-950 border border-slate-200/90 dark:border-zinc-800 shadow-md relative overflow-hidden transition-all">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`p-2 rounded-xl ${isSessionActive ? 'bg-red-500/10 text-red-500 animate-pulse' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
+                      <TimerIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 dark:text-zinc-500 block">
+                        Entrenamiento en Vivo
+                      </span>
+                      <h3 className="text-xs font-black text-slate-900 dark:text-white">
+                        {isSessionActive ? 'Sesión en Curso' : 'Control de Tiempo Total'}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Reloj Digital Grande */}
+                  <div className="flex items-baseline gap-1 bg-slate-100 dark:bg-zinc-950 px-3.5 py-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
+                    <span className="font-mono text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-wider">
+                      {formatTimer(sessionSeconds)}
+                    </span>
+                    <span className="text-[9px] font-bold text-slate-400 dark:text-zinc-500 uppercase">min</span>
+                  </div>
+                </div>
+
+                {/* Botones de Control de Sesión */}
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={handleToggleSession}
+                    className={`flex-1 py-2.5 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
+                      isSessionActive
+                        ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-amber-500/20'
+                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                    }`}
+                  >
+                    {isSessionActive ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5 fill-current" />
+                        <span>Pausar Sesión</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>{sessionSeconds > 0 ? 'Reanudar Sesión' : 'Iniciar Entrenamiento'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  {sessionSeconds > 0 && (
+                    <>
+                      <button
+                        onClick={handleFinishAndSaveSession}
+                        className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-600/20"
+                        title="Finalizar y guardar tiempo total en base de datos"
+                      >
+                        <Award className="w-3.5 h-3.5" />
+                        <span>Finalizar & Guardar</span>
+                      </button>
+
+                      <button
+                        onClick={handleResetSession}
+                        className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors"
+                        title="Reiniciar cronómetro"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
+                </div>
+
+                {/* Notificación de Guardado */}
+                {sessionSavedNotice && (
+                  <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>{sessionSavedNotice}</span>
+                  </div>
+                )}
+              </div>
+
               {/* Day Selector */}
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -351,25 +490,40 @@ export default function AthleteView({
 
                       {/* Weight Log & Notes Input */}
                       <div className="mt-3 pt-3 border-t border-slate-100 dark:border-zinc-800/80 grid grid-cols-1 gap-2.5">
-                        <div className="flex items-center justify-between gap-3 bg-slate-50 dark:bg-zinc-950/60 p-2.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
-                          <span className="text-[11px] font-bold text-slate-600 dark:text-zinc-400">
-                            Peso real levantado:
-                          </span>
-                          <div className="flex items-center gap-1.5">
-                            <input
-                              type="number"
-                              step="0.5"
-                              value={ex.loggedWeight !== undefined ? ex.loggedWeight : ""}
-                              placeholder={ex.prescribedWeight ? `${ex.prescribedWeight}` : "0"}
-                              onChange={(e) => {
-                                const val = parseFloat(e.target.value) || 0;
-                                onUpdateRoutineExercise(selectedDay, ex.id, {
-                                  loggedWeight: val
-                                });
-                              }}
-                              className="w-20 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-xl text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 shadow-2xs"
-                            />
-                            <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">kg</span>
+                        {/* Peso Sugerido vs Peso Real */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="bg-emerald-50/70 dark:bg-emerald-500/10 p-2.5 rounded-2xl border border-emerald-200/80 dark:border-emerald-500/20 flex flex-col justify-center">
+                            <span className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-400">
+                              🎯 Peso Sugerido
+                            </span>
+                            <div className="flex items-baseline gap-1 mt-0.5">
+                              <span className="text-base font-black text-slate-900 dark:text-white font-mono">
+                                {ex.prescribedWeight || 0}
+                              </span>
+                              <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">kg</span>
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-50 dark:bg-zinc-950/60 p-2.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 flex flex-col justify-center">
+                            <span className="text-[10px] uppercase font-bold text-slate-500 dark:text-zinc-400">
+                              ⚖️ Peso Real Log
+                            </span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <input
+                                type="number"
+                                step="0.5"
+                                value={ex.loggedWeight !== undefined && ex.loggedWeight !== 0 ? ex.loggedWeight : ""}
+                                placeholder={ex.prescribedWeight ? `${ex.prescribedWeight}` : "0"}
+                                onChange={(e) => {
+                                  const val = parseFloat(e.target.value) || 0;
+                                  onUpdateRoutineExercise(selectedDay, ex.id, {
+                                    loggedWeight: val
+                                  });
+                                }}
+                                className="w-full px-2 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 shadow-2xs"
+                              />
+                              <span className="text-xs font-bold text-slate-500 dark:text-zinc-400">kg</span>
+                            </div>
                           </div>
                         </div>
 

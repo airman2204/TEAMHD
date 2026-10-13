@@ -284,6 +284,27 @@ export default function App() {
     }
   };
 
+  const handleSaveWorkoutSession = async (sessionData) => {
+    if (!athlete || !isSupabaseConfigured || !supabase) return;
+    try {
+      // Registrar log resumen de sesión total
+      const dayData = routines[athlete.id]?.[sessionData.day];
+      const firstItemId = dayData?.exercises?.[0]?.id;
+      if (firstItemId) {
+        await supabase.from('workout_logs').insert([{
+          athlete_id: athlete.id,
+          routine_item_id: firstItemId,
+          actual_weight_kg: 0,
+          actual_reps: 0,
+          is_completed: true,
+          feedback_notes: `[SESIÓN COMPLETADA] Día: ${sessionData.day} | Duración Total: ${sessionData.durationFormatted} (${sessionData.durationSeconds}s) | Ejercicios listos: ${sessionData.completedCount}/${sessionData.totalExercises}`
+        }]);
+      }
+    } catch (e) {
+      console.warn('Error guardando tiempo de sesión:', e);
+    }
+  };
+
   const handleAddToCart = (prod) => {
     setCart((prev) => {
       const existing = prev.find((i) => i.id === prod.id);
@@ -357,6 +378,7 @@ export default function App() {
             onUpdateAthlete={handleUpdateAthlete}
             routines={routines[athlete.id] || {}}
             onUpdateRoutineExercise={handleUpdateRoutineExercise}
+            onSaveWorkoutSession={handleSaveWorkoutSession}
             appointments={appointments}
             products={products}
             cart={cart}

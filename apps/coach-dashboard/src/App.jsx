@@ -109,6 +109,7 @@ export default function App() {
             id: e.id,
             name: e.name,
             target: e.muscle_group,
+            muscle_group: e.muscle_group,
             videoUrl: e.video_url,
             tips: (e.form_cues || []).join('. ')
           })));

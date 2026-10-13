@@ -208,8 +208,8 @@ export function generateFullWeekRoutine(athlete, exerciseCatalog) {
 
     // Por cada grupo muscular objetivo de esta sesión, elegir los mejores 1-2 ejercicios
     session.muscles.forEach((muscle, mIdx) => {
-      const candidates = safeLibrary.filter(ex => ex.muscle_group === muscle && !usedExerciseIds.has(ex.id));
-      const pool = candidates.length > 0 ? candidates : safeLibrary.filter(ex => ex.muscle_group === muscle);
+      const candidates = safeLibrary.filter(ex => (ex.muscle_group === muscle || ex.target === muscle) && !usedExerciseIds.has(ex.id));
+      const pool = candidates.length > 0 ? candidates : safeLibrary.filter(ex => (ex.muscle_group === muscle || ex.target === muscle));
 
       if (pool.length > 0) {
         // Tomar hasta 2 ejercicios si es grupo muscular principal, o 1 si es secundario
