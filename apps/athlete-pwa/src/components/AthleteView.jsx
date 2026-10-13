@@ -51,6 +51,16 @@ export default function AthleteView({
   const [selectedDay, setSelectedDay] = React.useState('Lun');
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
 
+  // Mapear día activo de la rutina
+  const currentRoutineDay = routines[selectedDay] || {
+    dayTitle: "Descanso / Recuperación",
+    supplementPrescription: "Mantén hidratación óptima.",
+    exercises: []
+  };
+
+  // Modo de convivencia con música / Spotify (false = reloj controla cronómetro, true = reloj controla Spotify)
+  const [isMusicMode, setIsMusicMode] = React.useState(false);
+
   // Sesión de entrenamiento activo (cronómetro global)
   const [isSessionActive, setIsSessionActive] = React.useState(false);
   const [sessionSeconds, setSessionSeconds] = React.useState(0);
@@ -86,8 +96,8 @@ export default function AthleteView({
   const handleFinishAndSaveSession = () => {
     if (sessionSeconds === 0) return;
     setIsSessionActive(false);
-    const completedCount = currentRoutineDay.exercises.filter(e => e.completed).length;
-    const totalCount = currentRoutineDay.exercises.length;
+    const completedCount = (currentRoutineDay.exercises || []).filter(e => e.completed).length;
+    const totalCount = (currentRoutineDay.exercises || []).length;
     const formatted = formatTimer(sessionSeconds);
 
     if (onSaveWorkoutSession) {
@@ -106,7 +116,7 @@ export default function AthleteView({
 
   // Marcar el siguiente ejercicio como listo desde el reloj
   const handleMarkNextCompletedFromWatch = () => {
-    const uncompleted = currentRoutineDay.exercises.find(e => !e.completed);
+    const uncompleted = (currentRoutineDay.exercises || []).find(e => !e.completed);
     if (uncompleted) {
       onUpdateRoutineExercise(selectedDay, uncompleted.id, { completed: true });
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
@@ -116,12 +126,13 @@ export default function AthleteView({
   };
 
   // CONTROL MULTIMEDIA BLUETOOTH EN HONOR WATCH / SMARTWATCH
+  // Solo se apodera de los controles si NO está en modo música
   React.useEffect(() => {
     if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
 
-    if (isSessionActive) {
-      const completedCount = currentRoutineDay.exercises.filter(e => e.completed).length;
-      const totalCount = currentRoutineDay.exercises.length;
+    if (isSessionActive && !isMusicMode) {
+      const completedCount = (currentRoutineDay.exercises || []).filter(e => e.completed).length;
+      const totalCount = (currentRoutineDay.exercises || []).length;
 
       navigator.mediaSession.metadata = new MediaMetadata({
         title: `⏱️ ${formatTimer(sessionSeconds)} • ${selectedDay}`,
@@ -157,8 +168,17 @@ export default function AthleteView({
       navigator.mediaSession.setActionHandler('stop', () => {
         handleFinishAndSaveSession();
       });
+    } else {
+      // Liberar controles para que Spotify / música funcione sin estorbos
+      try {
+        navigator.mediaSession.playbackState = "none";
+        navigator.mediaSession.setActionHandler('play', null);
+        navigator.mediaSession.setActionHandler('pause', null);
+        navigator.mediaSession.setActionHandler('nexttrack', null);
+        navigator.mediaSession.setActionHandler('previoustrack', null);
+      } catch (e) {}
     }
-  }, [isSessionActive, sessionSeconds, currentRoutineDay.exercises, selectedDay]);
+  }, [isSessionActive, isMusicMode, sessionSeconds, currentRoutineDay.exercises, selectedDay]);
 
   // Profile local state
   // Parse structured data if exists
@@ -215,12 +235,6 @@ export default function AthleteView({
     });
     setProfileSavedToast(true);
     setTimeout(() => setProfileSavedToast(false), 3000);
-  };
-
-  const currentRoutineDay = routines[selectedDay] || {
-    dayTitle: "Descanso / Recuperación",
-    supplementPrescription: "Mantén hidratación óptima.",
-    exercises: []
   };
 
   const totalCartItems = cart.reduce((acc, item) => acc + item.qty, 0);
@@ -394,14 +408,31 @@ export default function AthleteView({
                   )}
                 </div>
 
-                {/* Smartwatch Control Live Hint */}
-                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
-                  <span className="flex items-center gap-1.5 font-bold text-emerald-700 dark:text-emerald-400">
-                    <span>⌚ Control Smartwatch / Reloj Activo</span>
-                  </span>
-                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">
-                    ⏯️ Pausa/Play | ⏭️ Marcar Listo
-                  </span>
+                {/* Smartwatch Control vs Spotify / Music Mode Switch */}
+                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5 font-bold">
+                    {isMusicMode ? (
+                      <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
+                        🎵 <span>Modo Música Activo (Spotify / Libre)</span>
+                      </span>
+                    ) : (
+                      <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+                        ⌚ <span>Modo Reloj Gym (Cronómetro & Sets)</span>
+                      </span>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setIsMusicMode(!isMusicMode)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wide transition-all border ${
+                      isMusicMode
+                        ? 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/60 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
+                        : 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
+                    }`}
+                    title="Alternar si estás escuchando Spotify o controlando el entrenamiento"
+                  >
+                    {isMusicMode ? 'Cambiar a Control Reloj' : 'Estoy Escuchando Música'}
+                  </button>
                 </div>
 
                 {/* Notificación de Guardado */}
