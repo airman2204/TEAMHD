@@ -382,22 +382,64 @@ export default function CoachDashboard({
             </div>
           </div>
 
-          {/* Student Detailed Medical / Injury Badge */}
-          {selectedStudent && (
-            <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-3 transition-colors">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4" />
-                Historial / Lesiones de {selectedStudent.name}
-              </span>
-              <p className="text-xs text-slate-700 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-950/80 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 leading-relaxed font-medium">
-                {selectedStudent.injuries || "Sin lesiones reportadas."}
-              </p>
-              <div className="text-xs text-slate-500 dark:text-zinc-400 flex justify-between px-1">
-                <span>Estatura: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.height} cm</strong></span>
-                <span>Peso: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.weight} kg</strong></span>
+          {/* Student Detailed Medical & Biometric Card */}
+          {selectedStudent && (() => {
+            const parsedNotes = parseAthleteNotes(selectedStudent.injuries);
+            return (
+              <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-3.5 transition-colors">
+                <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4" />
+                  Ficha Médica & Fitness • {selectedStudent.name}
+                </span>
+
+                {/* Campos Limpios y Desglosados */}
+                <div className="bg-slate-50 dark:bg-zinc-950/80 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 space-y-2.5 text-xs">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block">
+                      Lesiones / Molestias Articulares:
+                    </span>
+                    <p className="text-slate-800 dark:text-zinc-200 font-semibold mt-0.5">
+                      {parsedNotes.injuries || "Sin lesiones reportadas."}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block">
+                        Días de Entrenamiento:
+                      </span>
+                      <span className="text-slate-800 dark:text-zinc-200 font-bold">
+                        {parsedNotes.daysPerWeek} días / semana
+                      </span>
+                    </div>
+
+                    <div>
+                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block">
+                        Experiencia:
+                      </span>
+                      <span className="text-slate-800 dark:text-zinc-200 font-bold">
+                        {parsedNotes.experience}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-200/60 dark:border-zinc-800/80">
+                    <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500 block">
+                      Lugar & Equipamiento:
+                    </span>
+                    <span className="text-slate-800 dark:text-zinc-200 font-bold">
+                      {parsedNotes.equipment}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-xs text-slate-500 dark:text-zinc-400 flex justify-between px-1">
+                  <span>Estatura: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.height} cm</strong></span>
+                  <span>Peso: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.weight} kg</strong></span>
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Bandeja de Feedback & Alertas */}
           <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-3.5 transition-colors">
