@@ -214,25 +214,25 @@ export default function RestTimer({
     return (
       <button
         onClick={() => startTimer(initialSeconds)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-semibold transition-all hover:scale-105 active:scale-95 shadow-sm"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-400 border border-emerald-200 dark:border-amber-500/30 rounded-xl text-xs font-bold transition-all hover:scale-102 active:scale-98 shadow-2xs"
       >
-        <Timer className="w-3.5 h-3.5 animate-pulse text-amber-400" />
+        <Timer className="w-3.5 h-3.5 animate-pulse text-emerald-600 dark:text-amber-400" />
         <span>Descanso ({initialSeconds}s)</span>
-        <Watch className="w-3 h-3 text-amber-400/80 ml-0.5" title="Sincronizado con Honor Watch" />
+        <Watch className="w-3 h-3 text-emerald-600/80 dark:text-amber-400/80 ml-0.5" title="Sincronizado con Honor Watch" />
       </button>
     );
   }
 
   return (
-    <div className="bg-zinc-900/95 border border-amber-500/40 rounded-xl p-3 my-2 shadow-lg shadow-amber-500/5 transition-all space-y-2.5">
+    <div className="bg-white dark:bg-zinc-900/95 border border-emerald-200/90 dark:border-amber-500/40 rounded-2xl p-4 my-2 shadow-xs transition-all space-y-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+          <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-amber-500/20 text-emerald-600 dark:text-amber-400 border border-emerald-200/60 dark:border-transparent">
             <Watch className="w-4 h-4 animate-pulse" />
           </div>
           <div>
-            <span className="text-xs font-bold text-zinc-100 block">Rest Timer • Reloj Conectado</span>
-            <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+            <span className="text-xs font-black text-slate-900 dark:text-zinc-100 block">Rest Timer • Reloj Conectado</span>
+            <span className="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center gap-1 font-medium">
               Honor Watch / Bluetooth Sync
             </span>
           </div>
@@ -241,19 +241,19 @@ export default function RestTimer({
         <div className="flex items-center gap-1">
           <button
             onClick={() => startTimer(60)}
-            className={`px-2 py-0.5 text-[10px] rounded font-medium ${secondsLeft === 60 ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 60 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
           >
             60s
           </button>
           <button
             onClick={() => startTimer(90)}
-            className={`px-2 py-0.5 text-[10px] rounded font-medium ${secondsLeft === 90 ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 90 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
           >
             90s
           </button>
           <button
             onClick={() => startTimer(120)}
-            className={`px-2 py-0.5 text-[10px] rounded font-medium ${secondsLeft === 120 ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 120 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
           >
             120s
           </button>
@@ -262,7 +262,7 @@ export default function RestTimer({
               setIsOpen(false);
               localStorage.removeItem(STORAGE_KEY);
             }}
-            className="text-zinc-500 hover:text-zinc-300 ml-1 text-xs px-1"
+            className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 ml-1 text-xs px-1"
           >
             ✕
           </button>
@@ -270,17 +270,17 @@ export default function RestTimer({
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+      <div className="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-amber-500 dark:to-orange-500 transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
       <div className="flex items-center justify-between pt-1">
-        <div className="text-2xl font-mono font-bold tracking-tight text-white flex items-baseline gap-1.5">
+        <div className="text-2xl font-mono font-black tracking-tight text-slate-900 dark:text-white flex items-baseline gap-1.5">
           <span>{formatTime(secondsLeft)}</span>
-          <span className="text-[11px] text-zinc-400 font-sans">
+          <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-sans font-medium">
             {secondsLeft === 0 ? "¡Siguiente serie!" : isActive ? "descansando..." : "pausado"}
           </span>
         </div>
@@ -288,10 +288,10 @@ export default function RestTimer({
         <div className="flex items-center gap-2">
           <button
             onClick={togglePause}
-            className={`p-2 rounded-lg flex items-center justify-center transition-all ${
+            className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
               isActive 
                 ? 'bg-amber-500 text-black hover:bg-amber-400 font-bold' 
-                : 'bg-emerald-500 text-black hover:bg-emerald-400 font-bold'
+                : 'bg-emerald-600 text-white hover:bg-emerald-500 font-bold'
             }`}
             title={isActive ? "Pausar (o pausa en tu reloj)" : "Reanudar"}
           >
@@ -300,7 +300,7 @@ export default function RestTimer({
 
           <button
             onClick={() => resetTimer(initialSeconds)}
-            className="p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 transition-colors"
+            className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors"
             title="Reiniciar"
           >
             <RotateCcw className="w-4 h-4" />
@@ -309,15 +309,15 @@ export default function RestTimer({
       </div>
 
       {/* Badge explicativo de control en el reloj */}
-      <div className="pt-1.5 border-t border-zinc-800/80 flex items-center justify-between text-[10px] text-zinc-400">
-        <span className="flex items-center gap-1 text-amber-400/90 font-medium">
+      <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
+        <span className="flex items-center gap-1 text-emerald-700 dark:text-amber-400/90 font-medium">
           <Watch className="w-3 h-3" />
           Controla con Play/Pausa o Siguiente (⏭️) en tu reloj
         </span>
         {notificationPermission !== 'granted' && (
           <button
             onClick={requestNotificationAccess}
-            className="text-orange-400 underline hover:text-orange-300 flex items-center gap-0.5"
+            className="text-amber-600 dark:text-orange-400 underline font-semibold flex items-center gap-0.5"
           >
             <Bell className="w-3 h-3" />
             Activar vibración

@@ -156,25 +156,25 @@ export default function CoachDashboard({
   return (
     <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
       
-      {/* Top Banner / Header */}
-      <div className="bg-gradient-to-r from-zinc-900 via-zinc-900 to-zinc-950 border border-amber-500/30 rounded-2xl p-5 shadow-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 shadow-inner">
+      {/* Top Banner / Header Moderno */}
+      <div className="bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row md:items-center md:justify-between gap-4 transition-colors">
+        <div className="flex items-center gap-4">
+          <div className="w-13 h-13 rounded-2xl bg-emerald-50 dark:bg-emerald-500/20 border border-emerald-200 dark:border-emerald-500/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-xs">
             <ClipboardList className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-black uppercase tracking-widest text-amber-400">Team HD Muscle</span>
-              <span className="text-xs px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-300 font-semibold">Coach Portal Pro</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Team HD Muscle</span>
+              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 font-semibold">Coach Portal Pro</span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-white tracking-tight">Panel de Control de Atletas & Rutinas</h1>
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight mt-0.5">Gestión de Atletas & Prescripción</h1>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <button
             onClick={() => setIsNewStudentModalOpen(true)}
-            className="px-4 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl text-xs flex items-center gap-2 shadow-lg shadow-amber-500/20 hover:scale-105 active:scale-95 transition-all"
+            className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-extrabold rounded-2xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 hover:scale-102 active:scale-98 transition-all"
           >
             <UserPlus className="w-4 h-4" />
             <span>Nuevo Alumno</span>
@@ -182,28 +182,28 @@ export default function CoachDashboard({
         </div>
       </div>
 
-      {/* Magic Link Notice (Alerta Simulada) */}
+      {/* Magic Link Notice */}
       {magicLinkNotice && (
-        <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/80 to-zinc-900 border border-emerald-500/50 flex items-start justify-between shadow-xl animate-in slide-in-from-top duration-300">
+        <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/50 flex items-start justify-between shadow-xs animate-in slide-in-from-top duration-300">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-xl bg-emerald-500/20 text-emerald-400">
+            <div className="p-2 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-5 h-5" />
             </div>
             <div>
-              <h4 className="text-sm font-bold text-emerald-300">
+              <h4 className="text-sm font-bold text-emerald-900 dark:text-emerald-300">
                 ¡Invitación enviada exitosamente con Magic Link!
               </h4>
-              <p className="text-xs text-zinc-300 mt-0.5">
+              <p className="text-xs text-slate-600 dark:text-zinc-300 mt-0.5">
                 Se ha despachado el correo de bienvenida y acceso inmediato a <strong>{magicLinkNotice.email}</strong> para el alumno <strong>{magicLinkNotice.name}</strong>.
               </p>
-              <span className="text-[11px] font-mono text-zinc-400 block mt-1">
+              <span className="text-[11px] font-mono text-slate-500 dark:text-zinc-400 block mt-1">
                 Token link generado: https://teamhd.fit/access?token=magic_hd_{Date.now()}
               </span>
             </div>
           </div>
           <button
             onClick={() => setMagicLinkNotice(null)}
-            className="text-zinc-500 hover:text-zinc-300 p-1"
+            className="text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300 p-1"
           >
             <X className="w-4 h-4" />
           </button>
@@ -217,21 +217,21 @@ export default function CoachDashboard({
         <div className="lg:col-span-4 space-y-6">
           
           {/* Active Students List */}
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 shadow-sm">
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-amber-400" />
+          <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs transition-colors">
+            <div className="flex items-center justify-between mb-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-emerald-600 dark:text-amber-400" />
                 Alumnos Activos ({students.length})
               </h3>
             </div>
 
             <div className="space-y-2">
               {students.length === 0 ? (
-                <div className="text-center py-6 px-3 bg-zinc-950/40 rounded-xl border border-dashed border-zinc-800 text-xs text-zinc-500 space-y-2">
+                <div className="text-center py-8 px-4 bg-slate-50 dark:bg-zinc-950/40 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800 text-xs text-slate-500 dark:text-zinc-500 space-y-2.5">
                   <p>Aún no hay alumnos dados de alta.</p>
                   <button
                     onClick={() => setIsNewStudentModalOpen(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-bold transition-all"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-400 border border-emerald-200 dark:border-amber-500/30 rounded-xl text-xs font-bold transition-all shadow-2xs"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
                     <span>Dar de Alta Primer Alumno</span>
@@ -244,29 +244,29 @@ export default function CoachDashboard({
                     <button
                       key={std.id}
                       onClick={() => setSelectedStudentId(std.id)}
-                      className={`w-full p-3 rounded-xl text-left transition-all flex items-center justify-between border ${
+                      className={`w-full p-3.5 rounded-2xl text-left transition-all flex items-center justify-between border ${
                         isSelected
-                          ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/30'
-                          : 'bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700'
+                          ? 'bg-emerald-50/80 dark:bg-amber-500/15 border-emerald-500/80 dark:border-amber-500/60 ring-1 ring-emerald-500/30 dark:ring-amber-500/30 shadow-xs'
+                          : 'bg-slate-50/60 dark:bg-zinc-950/60 border-slate-200/80 dark:border-zinc-800/80 hover:border-slate-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-700 shrink-0">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-slate-200 dark:border-zinc-700 shrink-0">
                           <img src={std.avatar} alt={std.name} className="w-full h-full object-cover" />
                         </div>
                         <div>
-                          <h4 className="text-xs font-bold text-white leading-tight">{std.name}</h4>
-                          <span className="text-[11px] text-zinc-400 font-mono">{std.phone}</span>
+                          <h4 className="text-xs font-bold text-slate-900 dark:text-white leading-tight">{std.name}</h4>
+                          <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-mono">{std.phone}</span>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-1.5 rounded">
+                            <span className="text-[10px] text-emerald-700 dark:text-amber-400 font-semibold bg-emerald-100 dark:bg-amber-500/10 px-1.5 rounded">
                               {std.goal}
                             </span>
-                            <span className="text-[10px] text-zinc-500">{std.weight}kg</span>
+                            <span className="text-[10px] text-slate-500 dark:text-zinc-500">{std.weight}kg</span>
                           </div>
                         </div>
                       </div>
                       {isSelected && (
-                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-amber-400 animate-ping" />
                       )}
                     </button>
                   );
@@ -277,83 +277,89 @@ export default function CoachDashboard({
 
           {/* Student Detailed Medical / Injury Badge */}
           {selectedStudent && (
-            <div className="bg-zinc-900/60 border border-zinc-800 rounded-2xl p-4 space-y-2.5">
-              <span className="text-[11px] font-bold uppercase text-orange-400 flex items-center gap-1">
-                <AlertTriangle className="w-3.5 h-3.5" />
+            <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-3 transition-colors">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4" />
                 Historial / Lesiones de {selectedStudent.name}
               </span>
-              <p className="text-xs text-zinc-300 bg-zinc-950/80 p-3 rounded-xl border border-zinc-800 leading-relaxed">
+              <p className="text-xs text-slate-700 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-950/80 p-3.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 leading-relaxed font-medium">
                 {selectedStudent.injuries || "Sin lesiones reportadas."}
               </p>
-              <div className="text-[11px] text-zinc-400 flex justify-between">
-                <span>Estatura: <strong>{selectedStudent.height} cm</strong></span>
-                <span>Peso: <strong>{selectedStudent.weight} kg</strong></span>
+              <div className="text-xs text-slate-500 dark:text-zinc-400 flex justify-between px-1">
+                <span>Estatura: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.height} cm</strong></span>
+                <span>Peso: <strong className="text-slate-800 dark:text-zinc-200">{selectedStudent.weight} kg</strong></span>
               </div>
             </div>
           )}
 
           {/* Bandeja de Feedback & Alertas */}
-          <div className="bg-zinc-900/80 border border-zinc-800 rounded-2xl p-4 shadow-sm space-y-3">
+          <div className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-5 shadow-xs space-y-3.5 transition-colors">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-1.5">
-                <MessageCircle className="w-4 h-4 text-amber-400" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400 flex items-center gap-1.5">
+                <MessageCircle className="w-4 h-4 text-emerald-600 dark:text-amber-400" />
                 Bandeja de Feedback & Alertas
               </h3>
-              <span className="text-[10px] bg-red-500/20 text-red-400 border border-red-500/30 px-2 py-0.5 rounded-full font-bold">
+              <span className="text-[10px] bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/30 px-2.5 py-0.5 rounded-full font-bold">
                 Gym Live Feed
               </span>
             </div>
 
             <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-              {feedbacks.map((fb) => (
-                <div
-                  key={fb.id}
-                  className={`p-3 rounded-xl border text-xs space-y-1.5 transition-all ${
-                    fb.severity === 'alert'
-                      ? 'bg-red-950/30 border-red-500/40 text-red-200'
-                      : fb.severity === 'warning'
-                      ? 'bg-amber-950/30 border-amber-500/40 text-amber-200'
-                      : fb.severity === 'success'
-                      ? 'bg-emerald-950/20 border-emerald-500/30 text-emerald-200'
-                      : 'bg-zinc-950/60 border-zinc-800 text-zinc-300'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-white flex items-center gap-1">
-                      {fb.studentName}
-                    </span>
-                    <span className="text-[10px] text-zinc-500 font-mono">{fb.date}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-amber-400">
-                      Ejercicio: {fb.exercise}
-                    </span>
-                    {fb.badge && (
-                      <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                        fb.severity === 'alert' 
-                          ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
-                          : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                      }`}>
-                        🤖 {fb.badge}
+              {feedbacks.length === 0 ? (
+                <div className="text-center py-6 text-xs text-slate-400 dark:text-zinc-500">
+                  Sin reportes de triage pendientes.
+                </div>
+              ) : (
+                feedbacks.map((fb) => (
+                  <div
+                    key={fb.id}
+                    className={`p-3.5 rounded-2xl border text-xs space-y-2 transition-all ${
+                      fb.severity === 'alert'
+                        ? 'bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-500/40 text-red-900 dark:text-red-200'
+                        : fb.severity === 'warning'
+                        ? 'bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-500/40 text-amber-900 dark:text-amber-200'
+                        : fb.severity === 'success'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-500/30 text-emerald-900 dark:text-emerald-200'
+                        : 'bg-slate-50 dark:bg-zinc-950/60 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-slate-900 dark:text-white flex items-center gap-1">
+                        {fb.studentName}
                       </span>
+                      <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">{fb.date}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-emerald-700 dark:text-amber-400">
+                        Ejercicio: {fb.exercise}
+                      </span>
+                      {fb.badge && (
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${
+                          fb.severity === 'alert' 
+                            ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-400 border border-red-300 dark:border-red-500/30' 
+                            : 'bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 border border-amber-300 dark:border-amber-500/30'
+                        }`}>
+                          🤖 {fb.badge}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs leading-relaxed text-slate-600 dark:text-zinc-300">
+                      "{fb.note}"
+                    </p>
+                    {fb.aiSuggestion && (
+                      <div className="mt-2 p-2.5 bg-white/80 dark:bg-zinc-900/90 rounded-xl border border-slate-200 dark:border-zinc-700/60 text-[11px] text-slate-700 dark:text-zinc-300 flex items-start gap-2 shadow-2xs">
+                        <span className="text-xs">💡</span>
+                        <div>
+                          <strong className="text-amber-600 dark:text-amber-400 block font-bold text-[10px] uppercase">
+                            Sugerencia del Agente de Triage:
+                          </strong>
+                          <span>{fb.aiSuggestion}</span>
+                        </div>
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs leading-relaxed text-zinc-300">
-                    "{fb.note}"
-                  </p>
-                  {fb.aiSuggestion && (
-                    <div className="mt-2 p-2 bg-zinc-900/90 rounded-lg border border-zinc-700/60 text-[11px] text-zinc-300 flex items-start gap-1.5">
-                      <span className="text-xs">💡</span>
-                      <div>
-                        <strong className="text-amber-400 block font-semibold text-[10px] uppercase">
-                          Sugerencia del Agente de Triage:
-                        </strong>
-                        <span className="text-zinc-300">{fb.aiSuggestion}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
@@ -362,29 +368,29 @@ export default function CoachDashboard({
         {/* RIGHT COLUMN: Routine Builder & WhatsApp Notification (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
           
-          <div className="bg-zinc-900/90 border border-zinc-800 rounded-2xl p-5 shadow-xl space-y-5">
+          <div className="bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-6 shadow-xs space-y-6 transition-colors">
             
             {/* Header: Student & Day Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-amber-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-amber-400">
                   Constructor de Rutina Personalizada
                 </span>
-                <h2 className="text-lg font-black text-white">
-                  Rutina para: <span className="text-amber-400">{selectedStudent?.name || "Selecciona o agrega un alumno"}</span>
+                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                  Rutina para: <span className="text-emerald-600 dark:text-amber-400">{selectedStudent?.name || "Selecciona un alumno"}</span>
                 </h2>
               </div>
 
               {/* Day Pills */}
-              <div className="flex items-center gap-1 bg-zinc-950 p-1.5 rounded-xl border border-zinc-800 overflow-x-auto">
+              <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-x-auto">
                 {DAYS.map((d) => (
                   <button
                     key={d}
                     onClick={() => setSelectedDay(d)}
-                    className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                    className={`px-3 py-1.5 text-xs font-extrabold rounded-xl transition-all ${
                       selectedDay === d
-                        ? 'bg-amber-500 text-black shadow-md'
-                        : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
+                        ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black shadow-xs'
+                        : 'text-slate-500 hover:text-slate-900 dark:text-zinc-400 dark:hover:text-white hover:bg-white/60 dark:hover:bg-zinc-900'
                     }`}
                   >
                     {d}
@@ -396,7 +402,7 @@ export default function CoachDashboard({
             {/* Session Title & Supplement Prescription Row */}
             <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
               <div className="md:col-span-5">
-                <label className="block text-xs font-semibold text-zinc-400 mb-1">
+                <label className="block text-xs font-bold text-slate-600 dark:text-zinc-400 mb-1.5">
                   Enfoque del Día / Título de la Sesión
                 </label>
                 <input
@@ -404,13 +410,13 @@ export default function CoachDashboard({
                   value={currentDayTitle}
                   onChange={(e) => setCurrentDayTitle(e.target.value)}
                   placeholder="Ej. Torso Fuerza, Pierna Cuádriceps..."
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-xl text-xs font-bold text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
                 />
               </div>
 
               {/* Prescribir Suplemento vinculado a Strength Fit */}
               <div className="md:col-span-7">
-                <label className="block text-xs font-semibold text-orange-400 mb-1 flex items-center gap-1">
+                <label className="block text-xs font-bold text-amber-600 dark:text-orange-400 mb-1.5 flex items-center gap-1.5">
                   <Pill className="w-3.5 h-3.5" />
                   Prescribir Suplemento (Strength Fit)
                 </label>
@@ -418,7 +424,7 @@ export default function CoachDashboard({
                   <select
                     value={currentSupplement}
                     onChange={(e) => setCurrentSupplement(e.target.value)}
-                    className="flex-1 px-3 py-2 bg-zinc-950 border border-orange-500/40 rounded-xl text-xs font-medium text-zinc-200 focus:outline-none focus:border-orange-500"
+                    className="flex-1 px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-amber-300 dark:border-orange-500/40 rounded-xl text-xs font-semibold text-slate-800 dark:text-zinc-200 focus:outline-none focus:border-emerald-500 dark:focus:border-orange-500 transition-colors"
                   >
                     <option value="">-- Selecciona o personaliza suplementación --</option>
                     <option value="Creatina Creapure® 5g + Proteína Isolate 1 scoop post-entreno">
@@ -439,13 +445,13 @@ export default function CoachDashboard({
             </div>
 
             {/* Quick Exercise Library Search & Add */}
-            <div className="bg-zinc-950/70 border border-zinc-800/80 rounded-xl p-3.5 space-y-2.5">
+            <div className="bg-slate-50 dark:bg-zinc-950/70 border border-slate-200/90 dark:border-zinc-800/80 rounded-2xl p-4 space-y-3 transition-colors">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-zinc-300 flex items-center gap-1.5">
-                  <Search className="w-3.5 h-3.5 text-amber-400" />
+                <label className="text-xs font-bold text-slate-800 dark:text-zinc-200 flex items-center gap-1.5">
+                  <Search className="w-3.5 h-3.5 text-emerald-600 dark:text-amber-400" />
                   Buscador de Ejercicios (Biblioteca HD)
                 </label>
-                <span className="text-[10px] text-zinc-500">Haz clic en un ejercicio para agregarlo a la sesión</span>
+                <span className="text-[10px] text-slate-500 dark:text-zinc-500">Haz clic en un ejercicio para agregarlo a la sesión</span>
               </div>
 
               <div className="relative">
@@ -454,27 +460,27 @@ export default function CoachDashboard({
                   placeholder="Buscar ejercicio por nombre o músculo (ej. Press, Pecho, Sentadilla...)"
                   value={exerciseSearchTerm}
                   onChange={(e) => setExerciseSearchTerm(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-zinc-900 border border-zinc-700 rounded-xl text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500"
+                  className="w-full pl-9 pr-3.5 py-2.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 shadow-2xs transition-colors"
                 />
-                <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-2.5" />
+                <Search className="w-4 h-4 text-slate-400 dark:text-zinc-500 absolute left-3 top-3" />
               </div>
 
               {/* Search Results Pills */}
               {exerciseSearchTerm.trim() !== "" && (
                 <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pt-1">
                   {filteredLibrary.length === 0 ? (
-                    <span className="text-xs text-zinc-500 p-1">No se encontraron ejercicios</span>
+                    <span className="text-xs text-slate-400 dark:text-zinc-500 p-1">No se encontraron ejercicios</span>
                   ) : (
                     filteredLibrary.map((ex) => (
                       <button
                         key={ex.id}
                         type="button"
                         onClick={() => handleAddExerciseToRoutine(ex)}
-                        className="px-2.5 py-1.5 bg-zinc-900 hover:bg-amber-500 hover:text-black text-zinc-300 border border-zinc-700 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all group"
+                        className="px-3 py-1.5 bg-white dark:bg-zinc-900 hover:bg-emerald-600 hover:text-white dark:hover:bg-amber-500 dark:hover:text-black text-slate-700 dark:text-zinc-300 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-2xs group"
                       >
-                        <Plus className="w-3 h-3 text-amber-400 group-hover:text-black" />
+                        <Plus className="w-3.5 h-3.5 text-emerald-600 dark:text-amber-400 group-hover:text-inherit" />
                         <span>{ex.name}</span>
-                        <span className="text-[10px] text-zinc-500 group-hover:text-zinc-900 font-sans">({ex.target})</span>
+                        <span className="text-[10px] text-slate-400 dark:text-zinc-500 group-hover:text-inherit font-sans">({ex.target})</span>
                       </button>
                     ))
                   )}
@@ -485,63 +491,63 @@ export default function CoachDashboard({
             {/* Routine Exercise Rows */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-zinc-400">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
                   Ejercicios Asignados para {selectedDay} ({currentExercises.length})
                 </h4>
                 {currentExercises.length === 0 && (
-                  <span className="text-xs text-zinc-500">Agrega ejercicios usando el buscador de arriba</span>
+                  <span className="text-xs text-slate-400 dark:text-zinc-500">Agrega ejercicios usando el buscador de arriba</span>
                 )}
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {currentExercises.map((ex, idx) => (
                   <div
                     key={ex.id}
-                    className="p-3 bg-zinc-950/80 border border-zinc-800 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-3 hover:border-zinc-700 transition-all"
+                    className="p-3.5 bg-slate-50 dark:bg-zinc-950/80 border border-slate-200/90 dark:border-zinc-800 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 hover:border-slate-300 dark:hover:border-zinc-700 transition-all shadow-2xs"
                   >
-                    <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-zinc-800 text-amber-400 text-xs font-bold flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 h-7 rounded-xl bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-amber-400 text-xs font-black flex items-center justify-center shrink-0 border border-emerald-200/60 dark:border-zinc-700">
                         {idx + 1}
                       </span>
                       <div className="min-w-[180px]">
-                        <h5 className="text-xs font-bold text-white">{ex.name}</h5>
+                        <h5 className="text-xs font-bold text-slate-900 dark:text-white">{ex.name}</h5>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
                       <div>
-                        <span className="text-[10px] text-zinc-500 block">Series x Reps</span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-500 block">Series x Reps</span>
                         <input
                           type="text"
                           value={ex.series}
                           onChange={(e) => handleUpdateExerciseRow(ex.id, "series", e.target.value)}
-                          className="w-24 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white text-center focus:border-amber-500"
+                          className="w-24 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white text-center font-bold focus:border-emerald-500 dark:focus:border-amber-500"
                         />
                       </div>
 
                       <div>
-                        <span className="text-[10px] text-zinc-500 block">Descanso (s)</span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-500 block">Descanso (s)</span>
                         <input
                           type="number"
                           value={ex.restSeconds}
                           onChange={(e) => handleUpdateExerciseRow(ex.id, "restSeconds", parseInt(e.target.value) || 60)}
-                          className="w-16 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white text-center focus:border-amber-500"
+                          className="w-16 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white text-center font-bold focus:border-emerald-500 dark:focus:border-amber-500"
                         />
                       </div>
 
                       <div>
-                        <span className="text-[10px] text-zinc-500 block">Kg Sugeridos</span>
+                        <span className="text-[10px] font-semibold text-slate-500 dark:text-zinc-500 block">Kg Sugeridos</span>
                         <input
                           type="number"
                           value={ex.prescribedWeight || 0}
                           onChange={(e) => handleUpdateExerciseRow(ex.id, "prescribedWeight", parseFloat(e.target.value) || 0)}
-                          className="w-16 px-2 py-1 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white text-center focus:border-amber-500"
+                          className="w-16 px-2.5 py-1.5 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white text-center font-bold focus:border-emerald-500 dark:focus:border-amber-500"
                         />
                       </div>
 
                       <button
                         onClick={() => handleRemoveExercise(ex.id)}
-                        className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors mt-3 md:mt-0"
+                        className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors mt-3 md:mt-0"
                         title="Eliminar ejercicio"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -553,10 +559,10 @@ export default function CoachDashboard({
             </div>
 
             {/* Action Buttons: Guardar Rutina + Notificar por WhatsApp */}
-            <div className="pt-4 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3">
               <div className="flex items-center gap-2">
                 {saveSuccessNotice && (
-                  <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4" />
                     ¡Rutina guardada en la PWA del alumno!
                   </span>
@@ -566,7 +572,7 @@ export default function CoachDashboard({
               <div className="flex items-center gap-3 w-full sm:w-auto">
                 <button
                   onClick={handleSaveRoutine}
-                  className="flex-1 sm:flex-none px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95 transition-all"
+                  className="flex-1 sm:flex-none px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 active:scale-95 transition-all"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Guardar Rutina ({selectedDay})</span>
@@ -575,7 +581,7 @@ export default function CoachDashboard({
                 {showWaButton && (
                   <button
                     onClick={handleOpenWhatsApp}
-                    className="flex-1 sm:flex-none px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30 animate-pulse hover:scale-105 active:scale-95 transition-all"
+                    className="flex-1 sm:flex-none px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-extrabold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/30 animate-pulse hover:scale-102 active:scale-95 transition-all"
                   >
                     <MessageCircle className="w-4 h-4 fill-current" />
                     <span>Avisar por WhatsApp</span>
@@ -592,26 +598,26 @@ export default function CoachDashboard({
 
       {/* Modal: Nuevo Alumno */}
       {isNewStudentModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950">
-              <div className="flex items-center gap-2">
-                <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl transition-colors">
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-950">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-xl bg-emerald-50 dark:bg-amber-500/20 text-emerald-600 dark:text-amber-400 border border-emerald-200/60 dark:border-amber-500/30">
                   <UserPlus className="w-4 h-4" />
                 </div>
-                <h3 className="text-sm font-bold text-white">Alta Manual de Alumno</h3>
+                <h3 className="text-sm font-black text-slate-900 dark:text-white">Alta Manual de Alumno</h3>
               </div>
               <button
                 onClick={() => setIsNewStudentModalOpen(false)}
-                className="p-1 text-zinc-400 hover:text-white"
+                className="p-1.5 text-slate-400 hover:text-slate-700 dark:text-zinc-400 dark:hover:text-white rounded-xl hover:bg-slate-100 dark:hover:bg-zinc-800"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleCreateStudent} className="p-4 space-y-3.5">
+            <form onSubmit={handleCreateStudent} className="p-5 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
                   Nombre Completo del Alumno *
                 </label>
                 <input
@@ -620,55 +626,55 @@ export default function CoachDashboard({
                   placeholder="Ej. Marco Antonio Solís"
                   value={newStudentForm.name}
                   onChange={(e) => setNewStudentForm({ ...newStudentForm, name: e.target.value })}
-                  className="w-full px-3 py-2 bg-zinc-950 border border-zinc-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
                   Número de WhatsApp (con código de país) *
                 </label>
                 <div className="relative">
-                  <Phone className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                  <Phone className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-3" />
                   <input
                     type="tel"
                     required
                     placeholder="+52 55 1234 5678"
                     value={newStudentForm.phone}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, phone: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 bg-zinc-950 border border-zinc-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500 font-mono"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 font-mono transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-zinc-300 mb-1">
+                <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
                   Correo Electrónico (para Magic Link) *
                 </label>
                 <div className="relative">
-                  <Mail className="w-3.5 h-3.5 text-zinc-500 absolute left-3 top-2.5" />
+                  <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-3" />
                   <input
                     type="email"
                     required
                     placeholder="alumno@fitness.com"
                     value={newStudentForm.email}
                     onChange={(e) => setNewStudentForm({ ...newStudentForm, email: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2 bg-zinc-950 border border-zinc-700 rounded-xl text-xs text-white focus:outline-none focus:border-amber-500"
+                    className="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
                   />
                 </div>
               </div>
 
-              <div className="pt-2 flex justify-end gap-2">
+              <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
                   onClick={() => setIsNewStudentModalOpen(false)}
-                  className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl text-xs font-medium"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-extrabold rounded-xl text-xs flex items-center gap-1.5 shadow-md shadow-amber-500/20"
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-black rounded-xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 active:scale-95 transition-all"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>Guardar y Enviar Magic Link</span>

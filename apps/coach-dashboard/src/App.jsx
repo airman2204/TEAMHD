@@ -9,6 +9,7 @@ import {
   INITIAL_FEEDBACKS
 } from './mockData';
 import { analyzeInjuryFeedback } from './services/athleteService';
+import ThemeToggle from './components/ThemeToggle';
 
 export default function App() {
   const [students, setStudents] = useState(INITIAL_STUDENTS);
@@ -147,27 +148,28 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#09090b] text-zinc-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-white transition-colors duration-200">
       {/* Top Coach Header Bar */}
-      <header className="sticky top-0 z-40 w-full bg-zinc-950/90 backdrop-blur-xl border-b border-zinc-800/80 px-6 py-3.5 flex items-center justify-between">
+      <header className="sticky top-0 z-40 w-full bg-white/80 dark:bg-zinc-950/90 backdrop-blur-xl border-b border-slate-200/80 dark:border-zinc-800/80 px-6 py-3.5 flex items-center justify-between shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center font-black text-black text-sm shadow-md shadow-amber-500/20">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center font-black text-white text-sm shadow-md shadow-emerald-500/20">
             HD
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-wider text-white flex items-center gap-1.5">
+            <h1 className="text-sm font-black tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
               <span>TEAM HD MUSCLE</span>
-              <span className="text-zinc-600 font-normal">|</span>
-              <span className="text-amber-400 font-semibold text-xs">Coach Web Desktop</span>
+              <span className="text-slate-400 dark:text-zinc-600 font-normal">|</span>
+              <span className="text-emerald-600 dark:text-amber-400 font-semibold text-xs">Coach Portal Pro</span>
             </h1>
-            <p className="text-[10px] text-zinc-400">Panel Central de Prescripción & Alertas en Vivo (Port 5173)</p>
+            <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Panel Central de Prescripción & Alertas en Vivo</p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="text-[11px] font-mono text-zinc-300 bg-zinc-900 border border-emerald-500/40 px-3 py-1 rounded-full flex items-center gap-2 shadow-sm shadow-emerald-500/10">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="font-semibold text-emerald-400">Supabase Cloud: Conectado</span>
+          <ThemeToggle />
+          <span className="text-[11px] font-mono text-emerald-700 dark:text-zinc-300 bg-emerald-50 dark:bg-zinc-900 border border-emerald-300/80 dark:border-emerald-500/40 px-3 py-1 rounded-full flex items-center gap-2 shadow-xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="font-semibold text-emerald-600 dark:text-emerald-400">Supabase Cloud: Conectado</span>
           </span>
         </div>
       </header>
