@@ -298,9 +298,9 @@ export default function AthleteView({
                         </button>
                       </div>
 
-                      {/* Interactive Rest Timer */}
+                      {/* Interactive Rest Timer con soporte Honor Watch */}
                       <div className="mt-2.5 flex items-center justify-between">
-                        <RestTimer initialSeconds={ex.restSeconds || 90} />
+                        <RestTimer initialSeconds={ex.restSeconds || 90} exerciseName={ex.name} />
                         
                         <label className="flex items-center gap-2 cursor-pointer select-none bg-zinc-800/60 px-2.5 py-1.5 rounded-lg border border-zinc-700/40 hover:bg-zinc-800">
                           <input

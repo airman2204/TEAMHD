@@ -1,12 +1,71 @@
 import React from 'react';
-import { Play, Pause, RotateCcw, Timer } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, Watch, Bell, CheckCircle2 } from 'lucide-react';
 
 const STORAGE_KEY = 'athlete_pwa_rest_timer_target';
 
-export default function RestTimer({ initialSeconds = 90, onFinish }) {
+// Reproductor de silencio infinito para mantener activo el Bluetooth AVRCP en segundo plano
+let silenceAudioElement = null;
+
+function getOrCreateSilenceAudio() {
+  if (!silenceAudioElement && typeof window !== 'undefined') {
+    silenceAudioElement = new Audio();
+    // Archivo de audio WAV silencioso codificado en base64 (1 segundo en bucle)
+    silenceAudioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+    silenceAudioElement.loop = true;
+  }
+  return silenceAudioElement;
+}
+
+export default function RestTimer({ 
+  initialSeconds = 90, 
+  exerciseName = "Ejercicio",
+  onFinish 
+}) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [secondsLeft, setSecondsLeft] = React.useState(initialSeconds);
   const [isActive, setIsActive] = React.useState(false);
+  const [watchSyncEnabled, setWatchSyncEnabled] = React.useState(true);
+  const [notificationPermission, setNotificationPermission] = React.useState(
+    typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
+  );
+
+  // Solicitar permiso de notificaciones para el reloj
+  const requestNotificationAccess = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      try {
+        const perm = await Notification.requestPermission();
+        setNotificationPermission(perm);
+      } catch (err) {
+        console.warn('Error al solicitar permiso de notificación:', err);
+      }
+    }
+  };
+
+  // Disparar vibración y notificación local hacia el reloj Honor
+  const triggerWatchAlarm = (msg = "¡Descanso terminado! A darle a la siguiente serie 🔥") => {
+    // 1. Vibración en hardware celular (vibra el reloj si está enlazado)
+    if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate([400, 200, 400, 200, 600]);
+      } catch (e) {
+        console.warn('Vibration API no disponible', e);
+      }
+    }
+
+    // 2. Notificación push del sistema (reflejada en la pantalla del Honor Watch)
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      try {
+        new Notification("⏱️ Team HD • Tiempo Cumplido", {
+          body: `${msg} (${exerciseName})`,
+          icon: "/favicon.svg",
+          tag: "rest-timer-finish",
+          renotify: true
+        });
+      } catch (e) {
+        console.warn('Notification error', e);
+      }
+    }
+  };
 
   // Cargar timer activo de localStorage si existe
   React.useEffect(() => {
@@ -35,15 +94,12 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
           const remaining = Math.max(0, Math.ceil((targetTime - Date.now()) / 1000));
           setSecondsLeft(remaining);
           if (remaining <= 0) {
-            setIsActive(false);
-            localStorage.removeItem(STORAGE_KEY);
-            if (onFinish) onFinish();
+            handleCompleteTimer();
           }
         } else {
           setSecondsLeft((prev) => {
             if (prev <= 1) {
-              setIsActive(false);
-              if (onFinish) onFinish();
+              handleCompleteTimer();
               return 0;
             }
             return prev - 1;
@@ -52,7 +108,69 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isActive, secondsLeft, onFinish]);
+  }, [isActive, secondsLeft]);
+
+  const handleCompleteTimer = () => {
+    setIsActive(false);
+    localStorage.removeItem(STORAGE_KEY);
+    triggerWatchAlarm();
+    if (onFinish) onFinish();
+  };
+
+  // =========================================================================
+  // INTEGRACIÓN CON HONOR WATCH / MEDIA SESSION BLUETOOTH
+  // =========================================================================
+  React.useEffect(() => {
+    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
+
+    if (isActive && secondsLeft > 0) {
+      // Iniciar sesión multimedia visible en el reproductor de música del Honor Watch
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: `Descanso: ${secondsLeft}s`,
+        artist: `Team HD Muscle • ${exerciseName}`,
+        album: "Control de Entrenamiento en Reloj",
+        artwork: [
+          { src: "/favicon.svg", sizes: "96x96", type: "image/svg+xml" },
+          { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" }
+        ]
+      });
+
+      navigator.mediaSession.playbackState = "playing";
+
+      // Intentar reproducir sonido silencioso para enganchar el control Bluetooth del reloj
+      const audio = getOrCreateSilenceAudio();
+      audio.play().catch(() => {});
+
+      // Botón Play / Pausa en el Honor Watch
+      navigator.mediaSession.setActionHandler('play', () => {
+        togglePause();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        togglePause();
+      });
+
+      // Botón Siguiente (⏭️) en el reloj: Terminar descanso de inmediato
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        handleCompleteTimer();
+      });
+
+      // Botón Anterior (⏮️) en el reloj: Resetear cronómetro
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        resetTimer(initialSeconds);
+      });
+
+      // Botón Stop
+      navigator.mediaSession.setActionHandler('stop', () => {
+        setIsActive(false);
+        localStorage.removeItem(STORAGE_KEY);
+      });
+    } else {
+      navigator.mediaSession.playbackState = "paused";
+      if (silenceAudioElement) {
+        silenceAudioElement.pause();
+      }
+    }
+  }, [isActive, secondsLeft, exerciseName]);
 
   const startTimer = (secs) => {
     setSecondsLeft(secs);
@@ -60,6 +178,11 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
     setIsOpen(true);
     const target = Date.now() + secs * 1000;
     localStorage.setItem(STORAGE_KEY, target.toString());
+
+    // Asegurar permiso de notificación
+    if (notificationPermission !== 'granted') {
+      requestNotificationAccess();
+    }
   };
 
   const togglePause = () => {
@@ -95,19 +218,26 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
       >
         <Timer className="w-3.5 h-3.5 animate-pulse text-amber-400" />
         <span>Descanso ({initialSeconds}s)</span>
+        <Watch className="w-3 h-3 text-amber-400/80 ml-0.5" title="Sincronizado con Honor Watch" />
       </button>
     );
   }
 
   return (
-    <div className="bg-zinc-900/95 border border-amber-500/40 rounded-xl p-3 my-2 shadow-lg shadow-amber-500/5 transition-all">
-      <div className="flex items-center justify-between mb-2">
+    <div className="bg-zinc-900/95 border border-amber-500/40 rounded-xl p-3 my-2 shadow-lg shadow-amber-500/5 transition-all space-y-2.5">
+      <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-400">
-            <Timer className="w-4 h-4" />
+            <Watch className="w-4 h-4 animate-pulse" />
           </div>
-          <span className="text-xs font-semibold text-zinc-200">Rest Timer Persistente</span>
+          <div>
+            <span className="text-xs font-bold text-zinc-100 block">Rest Timer • Reloj Conectado</span>
+            <span className="text-[10px] text-zinc-400 flex items-center gap-1">
+              Honor Watch / Bluetooth Sync
+            </span>
+          </div>
         </div>
+
         <div className="flex items-center gap-1">
           <button
             onClick={() => startTimer(60)}
@@ -140,17 +270,17 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
       </div>
 
       {/* Progress Bar */}
-      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mb-3">
+      <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
 
-      <div className="flex items-center justify-between">
-        <div className="text-2xl font-mono font-bold tracking-tight text-white flex items-baseline gap-1">
+      <div className="flex items-center justify-between pt-1">
+        <div className="text-2xl font-mono font-bold tracking-tight text-white flex items-baseline gap-1.5">
           <span>{formatTime(secondsLeft)}</span>
-          <span className="text-xs text-zinc-500 font-sans">
+          <span className="text-[11px] text-zinc-400 font-sans">
             {secondsLeft === 0 ? "¡Siguiente serie!" : isActive ? "descansando..." : "pausado"}
           </span>
         </div>
@@ -163,7 +293,7 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
                 ? 'bg-amber-500 text-black hover:bg-amber-400 font-bold' 
                 : 'bg-emerald-500 text-black hover:bg-emerald-400 font-bold'
             }`}
-            title={isActive ? "Pausar" : "Reanudar"}
+            title={isActive ? "Pausar (o pausa en tu reloj)" : "Reanudar"}
           >
             {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
           </button>
@@ -176,6 +306,23 @@ export default function RestTimer({ initialSeconds = 90, onFinish }) {
             <RotateCcw className="w-4 h-4" />
           </button>
         </div>
+      </div>
+
+      {/* Badge explicativo de control en el reloj */}
+      <div className="pt-1.5 border-t border-zinc-800/80 flex items-center justify-between text-[10px] text-zinc-400">
+        <span className="flex items-center gap-1 text-amber-400/90 font-medium">
+          <Watch className="w-3 h-3" />
+          Controla con Play/Pausa o Siguiente (⏭️) en tu reloj
+        </span>
+        {notificationPermission !== 'granted' && (
+          <button
+            onClick={requestNotificationAccess}
+            className="text-orange-400 underline hover:text-orange-300 flex items-center gap-0.5"
+          >
+            <Bell className="w-3 h-3" />
+            Activar vibración
+          </button>
+        )}
       </div>
     </div>
   );
