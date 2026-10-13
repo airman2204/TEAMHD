@@ -395,6 +395,55 @@ export default function App() {
     }
   };
 
+  const handleSaveFullWeekRoutine = async (studentId, weekRoutine) => {
+    setRoutines((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...(prev[studentId] || {}),
+        ...weekRoutine
+      }
+    }));
+
+    if (isSupabaseConfigured && supabase && !studentId.startsWith('std-')) {
+      try {
+        for (const [day, dayData] of Object.entries(weekRoutine)) {
+          const { data: savedRoutine } = await supabase.from('routines').upsert({
+            athlete_id: studentId,
+            day_of_week: day,
+            session_title: dayData.dayTitle,
+            supplementation_notes: dayData.supplementPrescription
+          }, { onConflict: 'athlete_id,day_of_week' }).select().single();
+
+          if (savedRoutine) {
+            await supabase.from('routine_items').delete().eq('routine_id', savedRoutine.id);
+
+            if (dayData.exercises && dayData.exercises.length > 0) {
+              const itemsToInsert = dayData.exercises.map((ex, idx) => {
+                const realEx = exerciseLibrary.find(e => e.name.toLowerCase() === ex.name.toLowerCase() || e.id === ex.exerciseId);
+                const exerciseId = realEx ? realEx.id : ex.exerciseId || ex.id;
+
+                return {
+                  routine_id: savedRoutine.id,
+                  exercise_id: exerciseId,
+                  target_sets: parseInt(ex.series?.split('x')[0]) || 4,
+                  target_reps: ex.series?.split('x')[1] || '10-12',
+                  target_weight_kg: parseFloat(ex.prescribedWeight) || 0,
+                  rest_seconds: parseInt(ex.restSeconds) || 90,
+                  order_index: idx
+                };
+              });
+
+              await supabase.from('routine_items').insert(itemsToInsert);
+            }
+          }
+        }
+        console.log('Semana completa de entrenamiento persistida con éxito en Supabase');
+      } catch (err) {
+        console.error('Error al guardar semana completa en Supabase:', err);
+      }
+    }
+  };
+
   // Pantalla de carga mientras se verifica la sesión en el navegador
   if (isAuthChecking) {
     return (
@@ -454,6 +503,7 @@ export default function App() {
           onAddStudent={handleAddStudent}
           routines={routines}
           onSaveRoutineDay={handleSaveRoutineDay}
+          onSaveFullWeekRoutine={handleSaveFullWeekRoutine}
           exerciseLibrary={exerciseLibrary}
           products={products}
           feedbacks={feedbacks}

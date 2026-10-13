@@ -1,4 +1,3 @@
-import React from 'react';
 import { 
   Users, 
   UserPlus, 
@@ -11,14 +10,18 @@ import {
   AlertTriangle, 
   Pill, 
   Send, 
-  ExternalLink,
-  Sparkles,
-  ClipboardList,
-  Phone,
-  Mail,
-  X,
-  Dumbbell
+  ExternalLink, 
+  Sparkles, 
+  ClipboardList, 
+  Phone, 
+  Mail, 
+  X, 
+  Dumbbell,
+  Bot,
+  Wand2,
+  ShieldAlert
 } from 'lucide-react';
+import { generateFullWeekRoutine, parseAthleteNotes } from '../services/aiRoutinePlanner';
 
 const DAYS = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -27,6 +30,7 @@ export default function CoachDashboard({
   onAddStudent,
   routines,
   onSaveRoutineDay,
+  onSaveFullWeekRoutine,
   exerciseLibrary,
   products,
   feedbacks
@@ -87,6 +91,37 @@ export default function CoachDashboard({
   const [exerciseSearchTerm, setExerciseSearchTerm] = React.useState("");
   const [showWaButton, setShowWaButton] = React.useState(false);
   const [saveSuccessNotice, setSaveSuccessNotice] = React.useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = React.useState(false);
+  const [aiSuccessNotice, setAiSuccessNotice] = React.useState(null);
+
+  // CONSTRUCTOR DE RUTINAS CON IA (Genera semana completa de acuerdo a objetivos y lesiones)
+  const handleGenerateAiRoutine = async () => {
+    if (!selectedStudent) return;
+    try {
+      setIsGeneratingAi(true);
+      setAiSuccessNotice(null);
+
+      // Usar el servicio inteligente con el catálogo real de Supabase
+      const { weekRoutine, appliedSplit, injuriesConsidered } = generateFullWeekRoutine(
+        selectedStudent,
+        exerciseLibrary
+      );
+
+      // Guardar semana completa en Supabase
+      if (onSaveFullWeekRoutine) {
+        await onSaveFullWeekRoutine(selectedStudent.id, weekRoutine);
+      }
+
+      setAiSuccessNotice(`¡Rutina semanal completada con IA! Estructura: ${appliedSplit}.`);
+      setShowWaButton(true);
+      setTimeout(() => setAiSuccessNotice(null), 6000);
+    } catch (err) {
+      console.error("Error al generar rutina con IA:", err);
+      alert("Hubo un error al generar la rutina con IA: " + err.message);
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
 
   // Sync state when student or day changes
   React.useEffect(() => {
@@ -442,15 +477,66 @@ export default function CoachDashboard({
           <div className="bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-6 shadow-xs space-y-6 transition-colors">
             
             {/* Header: Student & Day Selector */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
-              <div>
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-amber-400">
-                  Constructor de Rutina Personalizada
-                </span>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
-                  Rutina para: <span className="text-emerald-600 dark:text-amber-400">{selectedStudent?.name || "Selecciona un alumno"}</span>
-                </h2>
+            <div className="flex flex-col gap-4 pb-4 border-b border-slate-100 dark:border-zinc-800">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-amber-400">
+                    Constructor de Rutina Personalizada
+                  </span>
+                  <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-0.5">
+                    Rutina para: <span className="text-emerald-600 dark:text-amber-400">{selectedStudent?.name || "Selecciona un alumno"}</span>
+                  </h2>
+                </div>
+
+                {/* Botón Destacado: Constructor de Rutinas con IA */}
+                {selectedStudent && (
+                  <button
+                    onClick={handleGenerateAiRoutine}
+                    disabled={isGeneratingAi}
+                    className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 active:scale-98 transition-all shrink-0 disabled:opacity-50"
+                  >
+                    {isGeneratingAi ? (
+                      <>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Construyendo Semana Completa...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4 text-amber-300 animate-pulse" />
+                        <span>Constructor de Rutinas con IA</span>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
+
+              {/* Tarjeta de Contexto Inteligente (Objetivo y Lesiones Consideradas) */}
+              {selectedStudent && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-zinc-950/70 border border-slate-200/80 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2.5 flex-wrap">
+                    <span className="px-2.5 py-1 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 font-black text-[11px]">
+                      🎯 Objetivo: {selectedStudent.goal || 'Hipertrofia'}
+                    </span>
+                    {selectedStudent.injuries && selectedStudent.injuries !== 'Ninguna reportada' && selectedStudent.injuries !== 'Sin lesiones' && (
+                      <span className="px-2.5 py-1 rounded-xl bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold text-[11px] flex items-center gap-1">
+                        <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
+                        Filtro Preventivo de Lesiones Activo
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">
+                    Genera automáticamente los 7 días de entrenamiento y descansos.
+                  </span>
+                </div>
+              )}
+
+              {/* Mensaje de Éxito al Generar con IA */}
+              {aiSuccessNotice && (
+                <div className="p-3 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-2xl text-xs text-purple-700 dark:text-purple-300 font-bold flex items-center gap-2 animate-in fade-in">
+                  <Sparkles className="w-4 h-4 text-purple-600 shrink-0" />
+                  <span>{aiSuccessNotice}</span>
+                </div>
+              )}
 
               {/* Day Pills */}
               <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-950 p-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-x-auto">

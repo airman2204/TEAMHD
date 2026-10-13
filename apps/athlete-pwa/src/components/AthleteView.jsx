@@ -46,31 +46,57 @@ export default function AthleteView({
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
 
   // Profile local state
-  const [profileForm, setProfileForm] = React.useState({
-    weight: athlete.weight,
-    height: athlete.height,
-    goal: athlete.goal,
-    injuries: athlete.injuries
-  });
+  // Parse structured data if exists
+  const initialData = React.useMemo(() => {
+    let injuries = athlete.injuries || '';
+    let experience = 'Intermedio (1-3 años)';
+    let daysPerWeek = 4;
+    let equipment = 'Gimnasio Comercial Completo';
+
+    try {
+      if (athlete.injuries && athlete.injuries.startsWith('{')) {
+        const parsed = JSON.parse(athlete.injuries);
+        injuries = parsed.injuries || '';
+        experience = parsed.experience || experience;
+        daysPerWeek = parsed.daysPerWeek || daysPerWeek;
+        equipment = parsed.equipment || equipment;
+      }
+    } catch (e) {}
+
+    return {
+      weight: athlete.weight || 70,
+      height: athlete.height || 170,
+      goal: athlete.goal || 'Hipertrofia',
+      injuries,
+      experience,
+      daysPerWeek,
+      equipment
+    };
+  }, [athlete]);
+
+  const [profileForm, setProfileForm] = React.useState(initialData);
   const [profileSavedToast, setProfileSavedToast] = React.useState(false);
 
   // Sync profileForm if athlete prop changes
   React.useEffect(() => {
-    setProfileForm({
-      weight: athlete.weight,
-      height: athlete.height,
-      goal: athlete.goal,
-      injuries: athlete.injuries
-    });
-  }, [athlete]);
+    setProfileForm(initialData);
+  }, [initialData]);
 
   const handleSaveProfile = (e) => {
     e.preventDefault();
+    const structuredNotes = JSON.stringify({
+      injuries: profileForm.injuries || '',
+      experience: profileForm.experience,
+      daysPerWeek: parseInt(profileForm.daysPerWeek) || 4,
+      equipment: profileForm.equipment
+    });
+
     onUpdateAthlete({
       ...athlete,
       ...profileForm,
       weight: parseFloat(profileForm.weight) || athlete.weight,
-      height: parseFloat(profileForm.height) || athlete.height
+      height: parseFloat(profileForm.height) || athlete.height,
+      injuries: structuredNotes
     });
     setProfileSavedToast(true);
     setTimeout(() => setProfileSavedToast(false), 3000);
@@ -450,6 +476,55 @@ export default function AthleteView({
                     <option value="Definición">Definición / Pérdida de Grasa</option>
                     <option value="Fuerza / Powerlifting">Fuerza Máxima / Powerlifting</option>
                     <option value="Recomposición">Recomposición Corporal</option>
+                  </select>
+                </div>
+
+                {/* Parámetros clave para el Constructor de Rutinas IA */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-zinc-400 mb-1.5">
+                      Días Disponibles para Entrenar
+                    </label>
+                    <select
+                      value={profileForm.daysPerWeek}
+                      onChange={(e) => setProfileForm({ ...profileForm, daysPerWeek: parseInt(e.target.value) || 4 })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
+                    >
+                      <option value={3}>3 Días por semana (Full Body)</option>
+                      <option value={4}>4 Días por semana (Torso / Pierna)</option>
+                      <option value={5}>5 Días por semana (Push / Pull / Legs / Upper / Lower)</option>
+                      <option value={6}>6 Días por semana (Push / Pull / Legs x2)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 dark:text-zinc-400 mb-1.5">
+                      Nivel de Experiencia
+                    </label>
+                    <select
+                      value={profileForm.experience}
+                      onChange={(e) => setProfileForm({ ...profileForm, experience: e.target.value })}
+                      className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
+                    >
+                      <option value="Principiante (0-1 años)">Principiante (0 - 1 años)</option>
+                      <option value="Intermedio (1-3 años)">Intermedio (1 - 3 años)</option>
+                      <option value="Avanzado (+3 años)">Avanzado (+3 años de entrenamiento serio)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-600 dark:text-zinc-400 mb-1.5">
+                    Equipamiento & Lugar de Entrenamiento
+                  </label>
+                  <select
+                    value={profileForm.equipment}
+                    onChange={(e) => setProfileForm({ ...profileForm, equipment: e.target.value })}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-700 rounded-xl text-xs font-semibold text-slate-900 dark:text-white focus:outline-none focus:border-emerald-500 dark:focus:border-amber-500 transition-colors"
+                  >
+                    <option value="Gimnasio Comercial Completo">Gimnasio Comercial Completo (Máquinas, poleas y barras)</option>
+                    <option value="Gimnasio en Casa (Mancuernas y banco)">Gimnasio en Casa (Mancuernas y banco)</option>
+                    <option value="Peso Corporal / Calistenia">Peso Corporal / Calistenia</option>
                   </select>
                 </div>
 
