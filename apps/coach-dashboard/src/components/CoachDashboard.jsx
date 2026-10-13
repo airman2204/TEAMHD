@@ -226,39 +226,52 @@ export default function CoachDashboard({
             </div>
 
             <div className="space-y-2">
-              {students.map((std) => {
-                const isSelected = std.id === selectedStudentId;
-                return (
+              {students.length === 0 ? (
+                <div className="text-center py-6 px-3 bg-zinc-950/40 rounded-xl border border-dashed border-zinc-800 text-xs text-zinc-500 space-y-2">
+                  <p>Aún no hay alumnos dados de alta.</p>
                   <button
-                    key={std.id}
-                    onClick={() => setSelectedStudentId(std.id)}
-                    className={`w-full p-3 rounded-xl text-left transition-all flex items-center justify-between border ${
-                      isSelected
-                        ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/30'
-                        : 'bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700'
-                    }`}
+                    onClick={() => setIsNewStudentModalOpen(true)}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded-lg text-xs font-bold transition-all"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-700 shrink-0">
-                        <img src={std.avatar} alt={std.name} className="w-full h-full object-cover" />
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold text-white leading-tight">{std.name}</h4>
-                        <span className="text-[11px] text-zinc-400 font-mono">{std.phone}</span>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-1.5 rounded">
-                            {std.goal}
-                          </span>
-                          <span className="text-[10px] text-zinc-500">{std.weight}kg</span>
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Dar de Alta Primer Alumno</span>
+                  </button>
+                </div>
+              ) : (
+                students.map((std) => {
+                  const isSelected = std.id === selectedStudentId;
+                  return (
+                    <button
+                      key={std.id}
+                      onClick={() => setSelectedStudentId(std.id)}
+                      className={`w-full p-3 rounded-xl text-left transition-all flex items-center justify-between border ${
+                        isSelected
+                          ? 'bg-amber-500/15 border-amber-500/60 ring-1 ring-amber-500/30'
+                          : 'bg-zinc-950/60 border-zinc-800/80 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full overflow-hidden border border-zinc-700 shrink-0">
+                          <img src={std.avatar} alt={std.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div>
+                          <h4 className="text-xs font-bold text-white leading-tight">{std.name}</h4>
+                          <span className="text-[11px] text-zinc-400 font-mono">{std.phone}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-amber-400 font-semibold bg-amber-500/10 px-1.5 rounded">
+                              {std.goal}
+                            </span>
+                            <span className="text-[10px] text-zinc-500">{std.weight}kg</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    {isSelected && (
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
-                    )}
-                  </button>
-                );
-              })}
+                      {isSelected && (
+                        <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+                      )}
+                    </button>
+                  );
+                })
+              )}
             </div>
           </div>
 
@@ -358,7 +371,7 @@ export default function CoachDashboard({
                   Constructor de Rutina Personalizada
                 </span>
                 <h2 className="text-lg font-black text-white">
-                  Rutina para: <span className="text-amber-400">{selectedStudent?.name}</span>
+                  Rutina para: <span className="text-amber-400">{selectedStudent?.name || "Selecciona o agrega un alumno"}</span>
                 </h2>
               </div>
 

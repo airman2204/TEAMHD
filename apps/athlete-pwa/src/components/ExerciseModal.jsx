@@ -4,8 +4,11 @@ import { X, ExternalLink, Info, CheckCircle2 } from 'lucide-react';
 export default function ExerciseModal({ exercise, onClose }) {
   if (!exercise) return null;
 
+  const isVideo = exercise.videoUrl && (exercise.videoUrl.includes('youtube') || exercise.videoUrl.includes('vimeo'));
+  const isImage = exercise.videoUrl && (exercise.videoUrl.endsWith('.jpg') || exercise.videoUrl.endsWith('.png') || exercise.videoUrl.includes('free-exercise-db') || exercise.videoUrl.startsWith('http'));
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-zinc-900 border border-zinc-700/80 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-zinc-800 bg-zinc-950/60">
@@ -25,9 +28,9 @@ export default function ExerciseModal({ exercise, onClose }) {
           </button>
         </div>
 
-        {/* Video Player or Fallback */}
-        <div className="relative aspect-video w-full bg-black">
-          {exercise.videoUrl ? (
+        {/* Media Player: Muestra de video o Fotografía Real del Ejercicio */}
+        <div className="relative aspect-video w-full bg-zinc-950 flex items-center justify-center overflow-hidden">
+          {isVideo ? (
             <iframe
               src={exercise.videoUrl}
               title={exercise.name}
@@ -35,10 +38,16 @@ export default function ExerciseModal({ exercise, onClose }) {
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
+          ) : isImage ? (
+            <img 
+              src={exercise.videoUrl} 
+              alt={exercise.name} 
+              className="w-full h-full object-contain bg-black"
+            />
           ) : (
-            <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-2">
+            <div className="flex flex-col items-center justify-center h-full text-zinc-500 gap-2 p-6 text-center">
               <Info className="w-8 h-8 text-amber-500" />
-              <p className="text-sm">Video demostrativo en producción por Coach HD</p>
+              <p className="text-xs text-zinc-400 font-medium">Muestra de postura y biomecánica en catálogo</p>
             </div>
           )}
         </div>
@@ -57,7 +66,7 @@ export default function ExerciseModal({ exercise, onClose }) {
 
           <div className="flex items-center justify-between text-xs text-zinc-400 pt-1">
             <span>Series programadas: <strong className="text-white">{exercise.series || "4x10"}</strong></span>
-            <span>Descanso óptimo: <strong className="text-amber-400">{exercise.restSeconds || 90}s</strong></span>
+            <span>Descanso sugerido: <strong className="text-amber-400">{exercise.restSeconds || 90}s</strong></span>
           </div>
         </div>
 
