@@ -40,6 +40,8 @@ export default function CoachDashboard({
     email: ""
   });
   const [magicLinkNotice, setMagicLinkNotice] = React.useState(null);
+  const [isSubmittingStudent, setIsSubmittingStudent] = React.useState(false);
+  const [studentError, setStudentError] = React.useState(null);
 
   // Routine builder temporary edit state
   const selectedStudent = students.find((s) => s.id === selectedStudentId) || students[0];
@@ -75,31 +77,31 @@ export default function CoachDashboard({
     e.preventDefault();
     if (!newStudentForm.name || !newStudentForm.email) return;
 
-    const newId = `std-${Date.now()}`;
-    const newStudent = {
-      id: newId,
-      name: newStudentForm.name,
-      email: newStudentForm.email,
-      phone: newStudentForm.phone || "+52 55 0000 0000",
-      weight: 70,
-      height: 170,
-      goal: "Hipertrofia",
-      injuries: "Ninguna reportada",
-      status: "Activo",
-      avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
-      coachNotes: "Alumno nuevo, requiere evaluación inicial."
-    };
-
-    const created = await onAddStudent(newStudentForm);
-    if (created) {
-      setSelectedStudentId(created.id);
-      setIsNewStudentModalOpen(false);
-      setMagicLinkNotice({
-        name: created.name,
-        email: created.email,
-        tempPassword: created.tempPassword
-      });
-      setNewStudentForm({ name: "", phone: "", email: "" });
+    try {
+      setIsSubmittingStudent(true);
+      setStudentError(null);
+      const created = await onAddStudent(newStudentForm);
+      if (created) {
+        setSelectedStudentId(created.id);
+        setIsNewStudentModalOpen(false);
+        setMagicLinkNotice({
+          name: created.name,
+          email: created.email,
+          phone: created.phone,
+          tempPassword: created.tempPassword
+        });
+        setNewStudentForm({ name: "", phone: "", email: "" });
+      }
+    } catch (err) {
+      console.error("Error al crear alumno:", err);
+      const msg = err?.message || "Ocurrió un error al registrar el alumno";
+      if (msg.includes("already been registered") || msg.includes("email_exists")) {
+        setStudentError("Este correo electrónico ya está registrado en el sistema. Usa un correo diferente para el alumno.");
+      } else {
+        setStudentError(msg);
+      }
+    } finally {
+      setIsSubmittingStudent(false);
     }
   };
 
@@ -643,6 +645,12 @@ export default function CoachDashboard({
             </div>
 
             <form onSubmit={handleCreateStudent} className="p-5 space-y-4">
+              {studentError && (
+                <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900 rounded-xl text-xs text-red-600 dark:text-red-400 font-medium">
+                  {studentError}
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
                   Nombre Completo del Alumno *
@@ -676,7 +684,7 @@ export default function CoachDashboard({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 dark:text-zinc-300 mb-1.5">
-                  Correo Electrónico (para Magic Link) *
+                  Correo Electrónico (para login en App Gym) *
                 </label>
                 <div className="relative">
                   <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-zinc-500 absolute left-3 top-3" />
@@ -694,17 +702,25 @@ export default function CoachDashboard({
               <div className="pt-2 flex justify-end gap-2.5">
                 <button
                   type="button"
+                  disabled={isSubmittingStudent}
                   onClick={() => setIsNewStudentModalOpen(false)}
-                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 rounded-xl text-xs font-bold transition-colors disabled:opacity-50"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-black rounded-xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 active:scale-95 transition-all"
+                  disabled={isSubmittingStudent}
+                  className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 dark:bg-amber-500 dark:hover:bg-amber-400 text-white dark:text-black font-black rounded-xl text-xs flex items-center gap-2 shadow-md shadow-emerald-600/20 dark:shadow-amber-500/20 active:scale-95 transition-all disabled:opacity-50"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Guardar y Enviar Magic Link</span>
+                  {isSubmittingStudent ? (
+                    <span>Registrando...</span>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Crear Alumno y Generar Accesos</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
