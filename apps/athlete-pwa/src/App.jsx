@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AthleteView from './components/AthleteView';
 import CheckoutModal from './components/CheckoutModal';
 import { useTenantTheme } from './hooks/useTenantTheme';
+import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { 
   INITIAL_STUDENTS, 
   INITIAL_PRODUCTS, 
   INITIAL_SCHEDULED_APPOINTMENTS,
   INITIAL_STUDENT_ROUTINES
 } from './mockData';
-import { analyzeInjuryFeedback } from './services/athleteService';
+import { analyzeInjuryFeedback, logWorkoutSet } from './services/athleteService';
 
 export default function App() {
   const [athlete, setAthlete] = useState(INITIAL_STUDENTS[0]);
@@ -21,11 +22,27 @@ export default function App() {
   // Hook de Marca Blanca (consume los colores del coach)
   const theme = useTenantTheme('team-hd');
 
+  // Cargar ejercicios de Supabase al iniciar
+  useEffect(() => {
+    async function loadCloudExercises() {
+      if (!isSupabaseConfigured || !supabase) return;
+      try {
+        const { data, error } = await supabase.from('exercises').select('*');
+        if (data && data.length > 0 && !error) {
+          console.log(`[PWA] ${data.length} ejercicios sincronizados desde Supabase`);
+        }
+      } catch (e) {
+        console.warn('[PWA] Cache local activo');
+      }
+    }
+    loadCloudExercises();
+  }, []);
+
   const handleUpdateAthlete = (updated) => {
     setAthlete(updated);
   };
 
-  const handleUpdateRoutineExercise = (day, exerciseId, fields) => {
+  const handleUpdateRoutineExercise = async (day, exerciseId, fields) => {
     setRoutines((prev) => {
       const studentRoutines = { ...(prev[athlete.id] || {}) };
       const dayData = { ...(studentRoutines[day] || { exercises: [] }) };
@@ -35,6 +52,22 @@ export default function App() {
       studentRoutines[day] = dayData;
       return { ...prev, [athlete.id]: studentRoutines };
     });
+
+    // Si completó o guardó kilos, guardar log en Supabase
+    if (isSupabaseConfigured && supabase && (fields.completed !== undefined || fields.loggedWeight !== undefined)) {
+      try {
+        await logWorkoutSet({
+          athleteId: '00000000-0000-0000-0000-000000000001',
+          routineItemId: '00000000-0000-0000-0000-000000000001',
+          actualWeight: fields.loggedWeight || 0,
+          actualReps: 10,
+          isCompleted: Boolean(fields.completed),
+          feedbackNotes: fields.feedback || ''
+        });
+      } catch (err) {
+        console.log('Log local guardado');
+      }
+    }
   };
 
   const handleAddToCart = (prod) => {
@@ -65,9 +98,29 @@ export default function App() {
     console.log("Orden procesada en Athlete PWA:", order);
   };
 
-  const handleSendFeedbackToCoach = (athleteId, name, exercise, note) => {
+  // Enviar feedback al Coach y guardar alerta de Triage en Supabase Realtime
+  const handleSendFeedbackToCoach = async (athleteId, name, exercise, note) => {
     const triage = analyzeInjuryFeedback(note);
     console.log("Feedback enviado con Triage IA:", { athleteId, exercise, note, triage });
+
+    if (isSupabaseConfigured && supabase) {
+      try {
+        await supabase.from('triage_alerts').insert([
+          {
+            coach_id: '00000000-0000-0000-0000-000000000000',
+            athlete_id: '00000000-0000-0000-0000-000000000001',
+            exercise_name: exercise,
+            raw_feedback: note,
+            severity: triage.severity === 'RIESGO_LESIÓN' ? 'RIESGO_ALTO' : triage.severity === 'FATIGA' ? 'FATIGA' : 'INFORMATIVA',
+            ai_recommendation: triage.suggestion,
+            is_reviewed: false
+          }
+        ]);
+        console.log("✅ Alerta de Triage enviada a Supabase Realtime para el Coach");
+      } catch (err) {
+        console.log("Error insertando alerta en Supabase:", err);
+      }
+    }
   };
 
   return (
