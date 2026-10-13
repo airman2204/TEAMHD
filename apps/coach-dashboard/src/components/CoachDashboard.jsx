@@ -31,7 +31,7 @@ export default function CoachDashboard({
   products,
   feedbacks
 }) {
-  const [selectedStudentId, setSelectedStudentId] = React.useState(students[0]?.id || "std-1");
+  const [selectedStudentId, setSelectedStudentId] = React.useState(students[0]?.id || null);
   const [selectedDay, setSelectedDay] = React.useState("Lun");
   const [isNewStudentModalOpen, setIsNewStudentModalOpen] = React.useState(false);
   const [newStudentForm, setNewStudentForm] = React.useState({
@@ -44,6 +44,18 @@ export default function CoachDashboard({
   const [magicLinkNotice, setMagicLinkNotice] = React.useState(null);
   const [isSubmittingStudent, setIsSubmittingStudent] = React.useState(false);
   const [studentError, setStudentError] = React.useState(null);
+
+  // Auto-seleccionar primer alumno real si selectedStudentId es nulo o inválido
+  React.useEffect(() => {
+    if (students.length > 0) {
+      const exists = students.some(s => s.id === selectedStudentId);
+      if (!exists) {
+        setSelectedStudentId(students[0].id);
+      }
+    } else {
+      setSelectedStudentId(null);
+    }
+  }, [students, selectedStudentId]);
 
   // Normaliza el teléfono: si tiene 10 dígitos (típico en México), le añade automáticamente +52
   const formatPhoneWithCountryCode = (rawPhone) => {
@@ -175,9 +187,10 @@ export default function CoachDashboard({
 
   // Open WhatsApp with pre-filled message
   const handleOpenWhatsApp = () => {
+    if (!selectedStudent) return;
     const phoneClean = selectedStudent.phone ? selectedStudent.phone.replace(/[^0-9]/g, '') : "5215500000000";
     const exerciseSummary = currentExercises.map((e) => `• ${e.name} (${e.series})`).join('%0A');
-    const msg = `¡Hola ${selectedStudent.name}! 🏋️‍♂️ Tu Coach Dave de Team HD Muscle acaba de actualizar tu rutina para el día *${selectedDay}* (*${currentDayTitle}*):%0A%0A${exerciseSummary}%0A%0A*Suplementación prescrita:* ${currentSupplement || "Sin suplementación específica"}%0A%0APuedes entrar a tu PWA para registrar tus pesos y descansos. ¡A darle con todo! 🔥`;
+    const msg = `¡Hola ${selectedStudent.name}! 🏋️‍♂️ Tu Coach de App Coach acaba de actualizar tu rutina para el día *${selectedDay}* (*${currentDayTitle}*):%0A%0A${exerciseSummary}%0A%0A*Suplementación prescrita:* ${currentSupplement || "Sin suplementación específica"}%0A%0APuedes entrar a tu App Gym para registrar tus pesos y descansos. ¡A darle con todo! 🔥`;
 
     window.open(`https://wa.me/${phoneClean}?text=${msg}`, '_blank');
   };

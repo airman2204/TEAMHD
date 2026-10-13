@@ -2,13 +2,7 @@ import React, { useState, useEffect } from 'react';
 import CoachDashboard from './components/CoachDashboard';
 import CoachLogin from './components/CoachLogin';
 import { supabase, supabaseAdmin, isSupabaseConfigured } from './lib/supabase';
-import { 
-  INITIAL_STUDENTS, 
-  INITIAL_EXERCISE_LIBRARY, 
-  INITIAL_PRODUCTS, 
-  INITIAL_STUDENT_ROUTINES,
-  INITIAL_FEEDBACKS
-} from './mockData';
+import { INITIAL_PRODUCTS } from './mockData';
 import { analyzeInjuryFeedback } from './services/athleteService';
 import ThemeToggle from './components/ThemeToggle';
 import { LogOut, ShieldCheck, User } from 'lucide-react';
@@ -120,24 +114,62 @@ export default function App() {
           })));
         }
 
-        // Cargar alertas en vivo de Supabase
-        const { data: alertsData, error: alError } = await supabase
-          .from('coach_alerts')
-          .select('*')
-          .order('created_at', { ascending: false })
+        // Cargar feedback y logs en vivo de Supabase (de la tabla workout_logs)
+        const { data: logsData, error: logError } = await supabase
+          .from('workout_logs')
+          .select('*, routine_items(*, exercises(*)), athletes(*)')
+          .not('feedback_notes', 'is', null)
+          .neq('feedback_notes', '')
+          .order('logged_at', { ascending: false })
           .limit(10);
 
-        if (alertsData && alertsData.length > 0 && !alError) {
-          setFeedbacks(alertsData.map(a => ({
-            id: a.id,
-            studentName: "Atleta en Gimnasio",
-            date: "Tiempo Real",
-            exercise: a.exercise_name,
-            note: a.feedback_text,
-            severity: a.severity === 'alert' || a.severity === 'RIESGO_LESIÓN' ? 'alert' : 'warning',
-            badge: a.severity,
-            aiSuggestion: a.ai_triage_suggestion
-          })));
+        if (logsData && logsData.length > 0 && !logError) {
+          setFeedbacks(logsData.map(l => {
+            const triage = analyzeInjuryFeedback(l.feedback_notes || '');
+            return {
+              id: l.id,
+              studentName: l.athletes?.full_name || 'Atleta en Gimnasio',
+              date: new Date(l.logged_at).toLocaleDateString('es-MX', { hour: '2-digit', minute: '2-digit' }),
+              exercise: l.routine_items?.exercises?.name || 'Ejercicio',
+              note: l.feedback_notes,
+              severity: triage.severity === 'RIESGO_LESIÓN' ? 'alert' : triage.severity === 'FATIGA' ? 'warning' : 'success',
+              badge: triage.badge,
+              aiSuggestion: triage.suggestion
+            };
+          }));
+        }
+        // Cargar rutinas existentes con sus ejercicios desde Supabase
+        const { data: routinesData, error: routError } = await supabase
+          .from('routines')
+          .select('*, routine_items(*, exercises(*))');
+
+        if (routinesData && !routError) {
+          const mappedRoutines = {};
+          routinesData.forEach(r => {
+            if (!mappedRoutines[r.athlete_id]) {
+              mappedRoutines[r.athlete_id] = {};
+            }
+            mappedRoutines[r.athlete_id][r.day_of_week] = {
+              id: r.id,
+              dayTitle: r.session_title,
+              supplementPrescription: r.supplementation_notes || '',
+              exercises: (r.routine_items || [])
+                .sort((a, b) => a.order_index - b.order_index)
+                .map(item => ({
+                  id: item.id,
+                  exerciseId: item.exercise_id,
+                  name: item.exercises?.name || 'Ejercicio',
+                  series: `${item.target_sets}x${item.target_reps}`,
+                  restSeconds: item.rest_seconds || 90,
+                  prescribedWeight: item.target_weight_kg || 0,
+                  loggedWeight: 0,
+                  completed: false,
+                  feedback: '',
+                  videoUrl: item.exercises?.video_url || ''
+                }))
+            };
+          });
+          setRoutines(mappedRoutines);
         }
 
         setIsDbConnected(true);
@@ -325,14 +357,40 @@ export default function App() {
 
     if (isSupabaseConfigured && supabase && !studentId.startsWith('std-')) {
       try {
-        await supabase.from('routines').upsert({
+        const { data: savedRoutine, error: routErr } = await supabase.from('routines').upsert({
           athlete_id: studentId,
           day_of_week: day,
           session_title: dayData.dayTitle,
           supplementation_notes: dayData.supplementPrescription
-        }, { onConflict: 'athlete_id,day_of_week' });
+        }, { onConflict: 'athlete_id,day_of_week' }).select().single();
+
+        if (savedRoutine && !routErr) {
+          // Eliminar items antiguos de esta rutina para sobreescribir con los nuevos
+          await supabase.from('routine_items').delete().eq('routine_id', savedRoutine.id);
+
+          // Si hay ejercicios añadidos por el coach, insertarlos vinculados
+          if (dayData.exercises && dayData.exercises.length > 0) {
+            const itemsToInsert = dayData.exercises.map((ex, idx) => {
+              // Buscar exercise_id en el catalogo real si ex.id es temporal
+              const realEx = exerciseLibrary.find(e => e.name.toLowerCase() === ex.name.toLowerCase() || e.id === ex.exerciseId);
+              const exerciseId = realEx ? realEx.id : ex.exerciseId || ex.id;
+
+              return {
+                routine_id: savedRoutine.id,
+                exercise_id: exerciseId,
+                target_sets: parseInt(ex.series?.split('x')[0]) || 4,
+                target_reps: ex.series?.split('x')[1] || '10-12',
+                target_weight_kg: parseFloat(ex.prescribedWeight) || 0,
+                rest_seconds: parseInt(ex.restSeconds) || 90,
+                order_index: idx
+              };
+            });
+
+            await supabase.from('routine_items').insert(itemsToInsert);
+          }
+        }
       } catch (e) {
-        console.log('Rutina sincronizada', e);
+        console.error('Error al guardar rutina completa en Supabase:', e);
       }
     }
   };

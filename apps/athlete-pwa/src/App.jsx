@@ -5,12 +5,7 @@ import ChangePasswordModal from './components/ChangePasswordModal';
 import CheckoutModal from './components/CheckoutModal';
 import { useTenantTheme } from './hooks/useTenantTheme';
 import { supabase, isSupabaseConfigured } from './lib/supabase';
-import { 
-  INITIAL_STUDENTS, 
-  INITIAL_PRODUCTS, 
-  INITIAL_SCHEDULED_APPOINTMENTS,
-  INITIAL_STUDENT_ROUTINES
-} from './mockData';
+import { INITIAL_PRODUCTS } from './mockData';
 import { analyzeInjuryFeedback, logWorkoutSet } from './services/athleteService';
 
 const ATHLETE_SESSION_KEY = 'athlete_active_session_token';
@@ -22,9 +17,9 @@ export default function App() {
   const [isChangePasswordModalOpen, setIsChangePasswordModalOpen] = useState(false);
 
   const [athlete, setAthlete] = useState(null);
-  const [routines, setRoutines] = useState(INITIAL_STUDENT_ROUTINES);
+  const [routines, setRoutines] = useState({});
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
-  const [appointments, setAppointments] = useState(INITIAL_SCHEDULED_APPOINTMENTS);
+  const [appointments, setAppointments] = useState([]);
   const [cart, setCart] = useState([]);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
@@ -121,22 +116,39 @@ export default function App() {
           coachNotes: 'Prescripción activa en App Gym.'
         });
 
-        // Cargar rutinas de este atleta
+        // Cargar rutinas de este atleta con sus ejercicios reales
         const { data: routinesData } = await supabase
           .from('routines')
-          .select('*')
+          .select('*, routine_items(*, exercises(*))')
           .eq('athlete_id', data.id);
 
         if (routinesData && routinesData.length > 0) {
           const mappedRoutines = {};
           routinesData.forEach(r => {
             mappedRoutines[r.day_of_week] = {
+              id: r.id,
               dayTitle: r.session_title,
-              supplementPrescription: r.supplementation_notes,
-              exercises: []
+              supplementPrescription: r.supplementation_notes || '',
+              exercises: (r.routine_items || [])
+                .sort((a, b) => a.order_index - b.order_index)
+                .map(item => ({
+                  id: item.id,
+                  exerciseId: item.exercise_id,
+                  name: item.exercises?.name || 'Ejercicio',
+                  series: `${item.target_sets}x${item.target_reps}`,
+                  restSeconds: item.rest_seconds || 90,
+                  prescribedWeight: item.target_weight_kg || 0,
+                  loggedWeight: 0,
+                  completed: false,
+                  feedback: '',
+                  videoUrl: item.exercises?.video_url || ''
+                }))
             };
           });
-          setRoutines(prev => ({ ...prev, [data.id]: mappedRoutines }));
+          setRoutines({ [data.id]: mappedRoutines });
+        } else {
+          // Si no tiene rutinas creadas por el coach, inicializar vacío para este atleta
+          setRoutines({ [data.id]: {} });
         }
       } else {
         // Fallback perfil basado en Auth User
