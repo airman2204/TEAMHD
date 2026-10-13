@@ -1,17 +1,7 @@
-// Service Worker para ejecución y caché offline en gimnasio
-const CACHE_NAME = 'athlete-pwa-v1';
-const ASSETS_TO_CACHE = [
-  '/',
-  '/index.html',
-  '/manifest.json'
-];
+// Service Worker para App Gym (Network First para asegurar siempre última versión desplegada)
+const CACHE_NAME = 'app-gym-v2';
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
-    })
-  );
   self.skipWaiting();
 });
 
@@ -21,6 +11,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           if (key !== CACHE_NAME) {
+            console.log('[SW] Purgando caché obsoleta:', key);
             return caches.delete(key);
           }
         })
@@ -32,11 +23,23 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+
+  // Network first: siempre buscar la versión fresca del servidor/Vercel
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      return cachedResponse || fetch(event.request).catch(() => {
-        return caches.match('/');
-      });
-    })
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(() => {
+        // Fallback a caché solo si está completamente offline
+        return caches.match(event.request);
+      })
   );
 });
+
