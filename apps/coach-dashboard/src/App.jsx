@@ -193,9 +193,10 @@ export default function App() {
     const coachId = currentUser?.id || 'c3cf10eb-2358-4b0b-820b-b0d3413a56aa';
     let createdAuthId = null;
 
-    // 1. Si está disponible supabaseAdmin, registrar auth user
+    // 1. Si está disponible supabaseAdmin, registrar auth user o enviar invitación oficial
     if (supabaseAdmin) {
       try {
+        // Primero intentamos crear el usuario con la contraseña temporal
         const { data: authUser, error: authErr } = await supabaseAdmin.auth.admin.createUser({
           email: newStudentForm.email,
           password: tempPassword,
@@ -210,11 +211,27 @@ export default function App() {
 
         if (authUser?.user) {
           createdAuthId = authUser.user.id;
+          
+          // Además, enviamos invitación formal por correo de Supabase
+          try {
+            await supabaseAdmin.auth.admin.inviteUserByEmail(newStudentForm.email, {
+              data: {
+                role: 'athlete',
+                name: newStudentForm.name,
+                temp_password: tempPassword
+              }
+            });
+            console.log('Invitación por correo despachada a Supabase Auth');
+          } catch (invErr) {
+            console.log('Invitación por correo opcional:', invErr);
+          }
         } else if (authErr) {
           console.warn('Aviso auth al crear atleta:', authErr.message);
+          throw new Error(authErr.message);
         }
       } catch (err) {
         console.warn('Fallo creación auth atleta:', err);
+        throw err;
       }
     }
 

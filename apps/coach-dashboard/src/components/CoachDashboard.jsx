@@ -200,12 +200,30 @@ export default function CoachDashboard({
                 El alumno <strong>{magicLinkNotice.name}</strong> puede acceder de inmediato a <strong>App Gym</strong> con su correo: <strong>{magicLinkNotice.email}</strong>
               </p>
               {magicLinkNotice.tempPassword && (
-                <div className="mt-2.5 p-3 rounded-2xl bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-500/30 inline-flex flex-col gap-1">
-                  <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400">Contraseña temporal asignada:</span>
-                  <span className="text-xs font-mono font-black text-emerald-600 dark:text-emerald-400 select-all tracking-wider">
-                    {magicLinkNotice.tempPassword}
-                  </span>
-                  <span className="text-[10px] text-slate-400 dark:text-zinc-500">El alumno deberá cambiar esta contraseña al ingresar por primera vez.</span>
+                <div className="mt-2.5 p-3.5 rounded-2xl bg-white dark:bg-zinc-900 border border-emerald-200 dark:border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <span className="text-[11px] font-bold text-slate-500 dark:text-zinc-400 block">Contraseña temporal asignada:</span>
+                    <span className="text-sm font-mono font-black text-emerald-600 dark:text-emerald-400 select-all tracking-wider">
+                      {magicLinkNotice.tempPassword}
+                    </span>
+                    <span className="text-[10px] text-slate-400 dark:text-zinc-500 block mt-0.5">
+                      El alumno deberá cambiar esta contraseña al ingresar por primera vez.
+                    </span>
+                  </div>
+
+                  {magicLinkNotice.phone && (
+                    <a
+                      href={`https://wa.me/${magicLinkNotice.phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(
+                        `¡Hola ${magicLinkNotice.name}! Bienvenido a App Gym 🏋️‍♂️.\n\nTus accesos para entrar a tu plan de entrenamiento son:\n🔗 Enlace: https://teamhd-athlete.vercel.app\n📧 Correo: ${magicLinkNotice.email}\n🔑 Contraseña temporal: ${magicLinkNotice.tempPassword}\n\nPor seguridad, el sistema te pedirá cambiar tu contraseña al ingresar.`
+                      )}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs inline-flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all shrink-0"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 fill-current" />
+                      <span>Enviar accesos por WhatsApp</span>
+                    </a>
+                  )}
                 </div>
               )}
             </div>
