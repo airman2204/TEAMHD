@@ -35,6 +35,7 @@ import MuscleRecoveryMap from './MuscleRecoveryMap';
 import ExerciseSwapModal from './ExerciseSwapModal';
 import PlateCalculatorModal from './PlateCalculatorModal';
 import ProgressView from './ProgressView';
+import FitbodRecoveryScreen from './FitbodRecoveryScreen';
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -53,7 +54,7 @@ export default function AthleteView({
   onLogout,
   onOpenChangePassword
 }) {
-  const [activeTab, setActiveTab] = React.useState('workout'); // 'workout' | 'profile' | 'store'
+  const [activeTab, setActiveTab] = React.useState('recovery'); // 'recovery' | 'workout' | 'progress' | 'profile' | 'store'
   const [selectedDay, setSelectedDay] = React.useState('Lun');
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
   const [exerciseToSwap, setExerciseToSwap] = React.useState(null);
@@ -240,8 +241,16 @@ export default function AthleteView({
         </header>
 
         {/* Main Content Area (Mobile Viewport Responsivo) */}
-        <div className="flex-1 w-full max-w-2xl mx-auto px-4 pt-4 pb-28 space-y-4">
+        <div className="flex-1 w-full max-w-2xl mx-auto px-4 pt-3 pb-28 space-y-4">
           
+          {/* TAB 0: RECOVERY SCREEN (FITBOD ICÓNICA FULL SCREEN) */}
+          {activeTab === 'recovery' && (
+            <FitbodRecoveryScreen
+              routines={routines}
+              onStartWorkout={() => setActiveTab('workout')}
+            />
+          )}
+
           {/* TAB 1: WORKOUT & RUTINA */}
           {activeTab === 'workout' && (
             <div className="space-y-4 animate-in fade-in duration-300">
@@ -1035,11 +1044,21 @@ export default function AthleteView({
         </div>
 
         {/* Bottom PWA Navigation Bar Nativa (Fixed Bottom) */}
-        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-zinc-800/80 px-4 flex items-center justify-around z-40 max-w-2xl mx-auto transition-colors shadow-lg">
+        <nav className="fixed bottom-0 left-0 right-0 h-16 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border-t border-slate-200/90 dark:border-zinc-800/80 px-3 flex items-center justify-around z-40 max-w-2xl mx-auto transition-colors shadow-lg">
+          <button
+            onClick={() => setActiveTab('recovery')}
+            className={`flex flex-col items-center gap-1 py-1 transition-all ${
+              activeTab === 'recovery' ? 'text-orange-600 dark:text-orange-400 scale-105 font-black' : 'text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+            }`}
+          >
+            <Activity className="w-5 h-5" />
+            <span className="text-[10px] font-bold">Recovery</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('workout')}
             className={`flex flex-col items-center gap-1 py-1 transition-all ${
-              activeTab === 'workout' ? 'text-emerald-600 dark:text-amber-400 scale-105 font-black' : 'text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300'
+              activeTab === 'workout' ? 'text-orange-600 dark:text-orange-400 scale-105 font-black' : 'text-slate-400 hover:text-slate-700 dark:text-zinc-500 dark:hover:text-zinc-300'
             }`}
           >
             <Dumbbell className="w-5 h-5" />
