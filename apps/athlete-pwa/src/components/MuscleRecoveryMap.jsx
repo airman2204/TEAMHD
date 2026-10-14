@@ -445,21 +445,21 @@ export default function MuscleRecoveryMap({ routines = {}, activeDay = 'Lun' }) 
   const activeSelected = selectedMuscle ? recoveryMap[selectedMuscle] : null;
 
   return (
-    <div className="bg-white dark:bg-zinc-900/90 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-4 shadow-2xs space-y-4 transition-colors">
+    <div className="bg-white dark:bg-zinc-900/90 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-4 shadow-sm space-y-4 transition-colors">
       {/* Cabecera */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 border border-purple-200/60 dark:border-purple-800/60">
+        <div className="flex items-center gap-2.5">
+          <div className="p-2 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 border border-orange-200/60 dark:border-orange-500/20">
             <Activity className="w-4 h-4 animate-pulse" />
           </div>
           <div>
             <h3 className="text-xs font-black uppercase tracking-wider text-slate-900 dark:text-white flex items-center gap-1.5">
               <span>Impacto Anatómico & HeatMap</span>
-              <span className="text-[10px] bg-purple-100 dark:bg-purple-900/60 text-purple-700 dark:text-purple-300 px-1.5 py-0.5 rounded-md font-bold">
+              <span className="text-[10px] bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 px-2 py-0.5 rounded-full font-black border border-orange-200/60 dark:border-orange-500/30">
                 Fitbod 3D
               </span>
             </h3>
-            <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">
+            <p className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium">
               Zonas corporales impactadas por tus ejercicios
             </p>
           </div>
