@@ -1,15 +1,38 @@
-self.addEventListener('install', () => {
+self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});
+
+// Listener para notificaciones disparadas desde la aplicación o temporizadores
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SHOW_REST_ALARM') {
+    const title = event.data.title || '⏱️ ¡Tiempo de descanso terminado!';
+    const options = {
+      body: event.data.body || 'Es momento de iniciar tu siguiente serie 🔥',
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      vibrate: [300, 100, 300, 100, 400],
+      tag: 'teamhd-rest-timer',
+      renotify: true,
+      requireInteraction: true
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
   event.waitUntil(
-    caches.keys().then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
-      .then(() => self.registration.unregister())
-      .then(() => self.clients.matchAll())
-      .then((clients) => {
-        clients.forEach((client) => client.navigate(client.url));
-      })
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if ('focus' in client) return client.focus();
+      }
+      if (self.clients.openWindow) return self.clients.openWindow('/');
+    })
   );
 });
+
 

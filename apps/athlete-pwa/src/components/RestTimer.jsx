@@ -41,28 +41,56 @@ export default function RestTimer({
     }
   };
 
-  // Disparar vibración y notificación local hacia el reloj Honor
+  // Disparar vibración y notificación nativa a la pantalla de bloqueo y reloj
   const triggerWatchAlarm = (msg = "¡Descanso terminado! A darle a la siguiente serie 🔥") => {
-    // 1. Vibración en hardware celular (vibra el reloj si está enlazado)
+    // 1. Vibración en hardware celular
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate([400, 200, 400, 200, 600]);
-      } catch (e) {
-        console.warn('Vibration API no disponible', e);
-      }
+      } catch (e) {}
     }
 
-    // 2. Notificación push del sistema (reflejada en la pantalla del Honor Watch)
+    // 2. Beep audible con Web Audio API para que suene incluso con pantalla bloqueada
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (AudioCtx) {
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(880, ctx.currentTime); // Tono de alarma agradable A5
+        osc.frequency.setValueAtTime(1174.66, ctx.currentTime + 0.15); // D6
+        gain.gain.setValueAtTime(0.3, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.4);
+      }
+    } catch (e) {}
+
+    // 3. Notificación a pantalla de bloqueo mediante Service Worker (iOS PWA & Android)
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
-      try {
-        new Notification("⏱️ Team HD • Tiempo Cumplido", {
-          body: `${msg} (${exerciseName})`,
-          icon: "/favicon.svg",
-          tag: "rest-timer-finish",
-          renotify: true
+      const title = "⏱️ ¡Descanso Cumplido!";
+      const options = {
+        body: `${msg} (${exerciseName})`,
+        icon: "/favicon.svg",
+        badge: "/favicon.svg",
+        tag: "teamhd-rest-timer",
+        renotify: true,
+        requireInteraction: true
+      };
+
+      if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+        navigator.serviceWorker.ready.then((registration) => {
+          registration.showNotification(title, options).catch(() => {
+            new Notification(title, options);
+          });
         });
-      } catch (e) {
-        console.warn('Notification error', e);
+      } else {
+        try {
+          new Notification(title, options);
+        } catch (e) {}
       }
     }
   };
