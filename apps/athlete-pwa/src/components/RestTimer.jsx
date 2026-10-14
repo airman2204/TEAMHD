@@ -71,6 +71,7 @@ export default function RestTimer({
 
     // 3. Notificación a pantalla de bloqueo mediante Service Worker (iOS PWA & Android)
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+      const currentOrigin = window.location.origin;
       const title = "⏱️ ¡Descanso Cumplido!";
       const options = {
         body: `${msg} (${exerciseName})`,
@@ -78,7 +79,10 @@ export default function RestTimer({
         badge: "/favicon.svg",
         tag: "teamhd-rest-timer",
         renotify: true,
-        requireInteraction: true
+        requireInteraction: true,
+        data: {
+          url: currentOrigin
+        }
       };
 
       if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
