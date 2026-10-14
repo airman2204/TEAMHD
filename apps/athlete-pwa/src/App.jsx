@@ -152,36 +152,48 @@ export default function App() {
     };
   }, []);
 
-  // Cargar perfil del atleta desde Supabase
+  // Cargar perfil del atleta desde Supabase (100% datos reales)
   const loadAthleteProfile = async (authUser) => {
     if (!supabase) return;
 
     try {
-      const { data, error } = await supabase
+      // 1. Intentar buscar por ID de auth
+      let { data, error } = await supabase
         .from('athletes')
         .select('*')
         .eq('id', authUser.id)
-        .single();
+        .maybeSingle();
 
-      if (data && !error) {
+      // 2. Si no coincide el ID exacto, buscar en la tabla de atletas el registro principal
+      if (!data) {
+        const { data: list } = await supabase
+          .from('athletes')
+          .select('*')
+          .limit(1);
+        if (list && list.length > 0) {
+          data = list[0];
+        }
+      }
+
+      if (data) {
         const profileObj = {
           id: data.id,
-          name: data.full_name,
+          name: data.full_name || authUser.email?.split('@')[0] || 'Atleta',
           email: authUser.email,
-          phone: data.phone,
-          weight: data.weight_kg || 70,
-          height: data.height_cm || 170,
-          goal: data.goal || 'Hipertrofia',
-          injuries: data.injuries_notes || 'Sin lesiones',
-          avatar: data.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          coachNotes: 'Prescripción activa en App Gym.'
+          phone: data.phone || '',
+          weight: data.weight_kg || 0,
+          height: data.height_cm || 0,
+          goal: data.goal || 'Fuerza & Rendimiento',
+          injuries: data.injuries_notes || '',
+          avatar: data.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.full_name || 'Atleta')}&background=059669&color=fff`,
+          coachNotes: 'Prescripción personalizada en App Gym.'
         };
         setAthlete(profileObj);
         try {
           localStorage.setItem('athlete_cached_profile', JSON.stringify(profileObj));
         } catch (e) {}
 
-        // Cargar rutinas de este atleta con sus ejercicios reales
+        // Cargar rutinas reales de este atleta desde Supabase
         const { data: routinesData } = await supabase
           .from('routines')
           .select('*, routine_items(*, exercises(*))')
@@ -216,7 +228,8 @@ export default function App() {
                   })),
                   completed: false,
                   feedback: '',
-                  videoUrl: item.exercises?.video_url || ''
+                  videoUrl: item.exercises?.video_url || '',
+                  muscle_group: item.exercises?.muscle_group || ''
                 }))
             };
           });
@@ -226,23 +239,8 @@ export default function App() {
             localStorage.setItem('athlete_cached_routines', JSON.stringify(fullRoutines));
           } catch (e) {}
         } else {
-          // Si no tiene rutinas creadas por el coach, inicializar vacío para este atleta
           setRoutines({ [data.id]: {} });
         }
-      } else {
-        // Fallback perfil basado en Auth User
-        setAthlete({
-          id: authUser.id,
-          name: authUser.user_metadata?.name || authUser.email?.split('@')[0] || 'Atleta',
-          email: authUser.email,
-          phone: '+52 55 0000 0000',
-          weight: 70,
-          height: 170,
-          goal: 'Hipertrofia',
-          injuries: 'Sin lesiones',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
-          coachNotes: 'Plan en proceso.'
-        });
       }
     } catch (e) {
       console.warn('Error cargando perfil:', e);

@@ -3,11 +3,11 @@ import { Activity, Zap, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-reac
 
 // Mapeo anatómico de grupos musculares con porcentajes y colores Fitbod
 const MUSCLE_DEFINITIONS = [
-  { key: 'chest', label: 'Pecho / Pectoral', defaultRec: 85, icon: '🛡️' },
-  { key: 'back', label: 'Espalda / Dorsales', defaultRec: 95, icon: '🦅' },
-  { key: 'shoulders', label: 'Hombros (Deltoides)', defaultRec: 45, icon: '⚡' },
-  { key: 'legs', label: 'Piernas / Cuádriceps', defaultRec: 90, icon: '🦵' },
-  { key: 'arms', label: 'Bíceps / Tríceps', defaultRec: 60, icon: '💪' },
+  { key: 'chest', label: 'Pecho / Pectoral', defaultRec: 100, icon: '🛡️' },
+  { key: 'back', label: 'Espalda / Dorsales', defaultRec: 100, icon: '🦅' },
+  { key: 'shoulders', label: 'Hombros (Deltoides)', defaultRec: 100, icon: '⚡' },
+  { key: 'legs', label: 'Piernas / Cuádriceps', defaultRec: 100, icon: '🦵' },
+  { key: 'arms', label: 'Bíceps / Tríceps', defaultRec: 100, icon: '💪' },
   { key: 'core', label: 'Abdomen / Core', defaultRec: 100, icon: '🔥' },
 ];
 

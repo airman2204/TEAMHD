@@ -159,9 +159,9 @@ export default function AthleteView({
     } catch (e) {}
 
     return {
-      weight: athlete.weight || 70,
-      height: athlete.height || 170,
-      goal: athlete.goal || 'Hipertrofia',
+      weight: athlete.weight || '',
+      height: athlete.height || '',
+      goal: athlete.goal || '',
       injuries,
       experience,
       daysPerWeek,
@@ -928,63 +928,77 @@ export default function AthleteView({
               </div>
 
               {/* Products Grid */}
-              <div className="space-y-3">
-                {products.map((prod) => {
-                  const inCartItem = cart.find(c => c.id === prod.id);
+              {products.length === 0 ? (
+                <div className="bg-white dark:bg-zinc-900/60 border border-slate-200/90 dark:border-zinc-800 rounded-3xl p-8 text-center space-y-2">
+                  <div className="w-12 h-12 mx-auto rounded-2xl bg-orange-50 dark:bg-orange-950/40 border border-orange-200/60 dark:border-orange-500/20 flex items-center justify-center text-orange-600 dark:text-orange-400">
+                    <ShoppingBag className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-black text-slate-800 dark:text-zinc-200">
+                    Catálogo en preparación
+                  </h4>
+                  <p className="text-xs text-slate-500 dark:text-zinc-400 max-w-xs mx-auto">
+                    Próximamente tu coach publicará suplementos y equipamiento oficial disponibles para entrega directa.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {products.map((prod) => {
+                    const inCartItem = cart.find(c => c.id === prod.id);
 
-                  return (
-                    <div
-                      key={prod.id}
-                      className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 hover:border-orange-400 dark:hover:border-orange-500/40 rounded-3xl p-3.5 flex gap-3.5 shadow-2xs transition-all"
-                    >
-                      <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-zinc-950 shrink-0 border border-slate-200 dark:border-zinc-800 relative">
-                        <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
-                        {prod.stock < 15 && (
-                          <span className="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-md">
-                            {prod.stock} disp.
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex-1 flex flex-col justify-between">
-                        <div>
-                          <div className="flex items-start justify-between gap-1">
-                            <h4 className="text-xs font-black text-slate-900 dark:text-white leading-snug">
-                              {prod.name}
-                            </h4>
-                            <span className="text-xs font-mono font-black text-orange-600 dark:text-orange-400 shrink-0">
-                              ${prod.price} <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-sans">MXN</span>
+                    return (
+                      <div
+                        key={prod.id}
+                        className="bg-white dark:bg-zinc-900/80 border border-slate-200/90 dark:border-zinc-800 hover:border-orange-400 dark:hover:border-orange-500/40 rounded-3xl p-3.5 flex gap-3.5 shadow-2xs transition-all"
+                      >
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden bg-slate-50 dark:bg-zinc-950 shrink-0 border border-slate-200 dark:border-zinc-800 relative">
+                          <img src={prod.image} alt={prod.name} className="w-full h-full object-cover" />
+                          {prod.stock < 15 && (
+                            <span className="absolute top-1 left-1 bg-red-600 text-white text-[9px] font-bold px-1.5 py-0.2 rounded-md">
+                              {prod.stock} disp.
                             </span>
-                          </div>
-                          <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 font-medium line-clamp-1">{prod.flavor}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5 line-clamp-2">{prod.description}</p>
+                          )}
                         </div>
 
-                        <div className="mt-2 flex items-center justify-between">
-                          <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">
-                            Stock: <strong className="text-slate-800 dark:text-zinc-200">{prod.stock} u.</strong>
-                          </span>
+                        <div className="flex-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex items-start justify-between gap-1">
+                              <h4 className="text-xs font-black text-slate-900 dark:text-white leading-snug">
+                                {prod.name}
+                              </h4>
+                              <span className="text-xs font-mono font-black text-orange-600 dark:text-orange-400 shrink-0">
+                                ${prod.price} <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-sans">MXN</span>
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 mt-0.5 font-medium line-clamp-1">{prod.flavor}</p>
+                            <p className="text-[10px] text-slate-400 dark:text-zinc-500 mt-0.5 line-clamp-2">{prod.description}</p>
+                          </div>
 
-                          <button
-                            onClick={() => onAddToCart(prod)}
-                            disabled={prod.stock <= 0}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 transition-all ${
-                              prod.stock <= 0
-                                ? 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed'
-                                : inCartItem
-                                ? 'bg-orange-600 dark:bg-orange-500 text-white dark:text-black hover:bg-orange-500'
-                                : 'bg-orange-50 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/40 hover:bg-orange-600 hover:text-white'
-                            }`}
-                          >
-                            <ShoppingBag className="w-3 h-3" />
-                            <span>{inCartItem ? `En Carrito (${inCartItem.qty})` : 'Añadir'}</span>
-                          </button>
+                          <div className="mt-2 flex items-center justify-between">
+                            <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">
+                              Stock: <strong className="text-slate-800 dark:text-zinc-200">{prod.stock} u.</strong>
+                            </span>
+
+                            <button
+                              onClick={() => onAddToCart(prod)}
+                              disabled={prod.stock <= 0}
+                              className={`px-3.5 py-1.5 rounded-xl text-xs font-black flex items-center gap-1 transition-all ${
+                                prod.stock <= 0
+                                  ? 'bg-slate-100 dark:bg-zinc-800 text-slate-400 dark:text-zinc-500 cursor-not-allowed'
+                                  : inCartItem
+                                  ? 'bg-orange-600 dark:bg-orange-500 text-white dark:text-black hover:bg-orange-500'
+                                  : 'bg-orange-50 dark:bg-orange-500/20 text-orange-700 dark:text-orange-400 border border-orange-200 dark:border-orange-500/40 hover:bg-orange-600 hover:text-white'
+                              }`}
+                            >
+                              <ShoppingBag className="w-3 h-3" />
+                              <span>{inCartItem ? `En Carrito (${inCartItem.qty})` : 'Añadir'}</span>
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Quick Checkout Trigger if Cart has items */}
               {cart.length > 0 && (
