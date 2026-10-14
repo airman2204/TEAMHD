@@ -24,11 +24,14 @@ import {
   Pause,
   RotateCcw,
   Timer as TimerIcon,
-  Award
+  Award,
+  RefreshCw
 } from 'lucide-react';
 import RestTimer from './RestTimer';
 import ExerciseModal from './ExerciseModal';
 import ThemeToggle from './ThemeToggle';
+import MuscleRecoveryMap from './MuscleRecoveryMap';
+import ExerciseSwapModal from './ExerciseSwapModal';
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -50,12 +53,23 @@ export default function AthleteView({
   const [activeTab, setActiveTab] = React.useState('workout'); // 'workout' | 'profile' | 'store'
   const [selectedDay, setSelectedDay] = React.useState('Lun');
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
+  const [exerciseToSwap, setExerciseToSwap] = React.useState(null);
 
   // Mapear día activo de la rutina
   const currentRoutineDay = routines[selectedDay] || {
     dayTitle: "Descanso / Recuperación",
     supplementPrescription: "Mantén hidratación óptima.",
     exercises: []
+  };
+
+  const handleSelectAlternativeExercise = (alternative) => {
+    if (!exerciseToSwap) return;
+    onUpdateRoutineExercise(selectedDay, exerciseToSwap.id, {
+      name: alternative.name,
+      muscle_group: alternative.muscle_group,
+      videoUrl: alternative.video_url
+    });
+    setExerciseToSwap(null);
   };
 
   // Sesión de entrenamiento activo (cronómetro global)
@@ -404,6 +418,9 @@ export default function AthleteView({
                 </div>
               </div>
 
+              {/* Muscle Recovery Heat Map (Fitbod Engine) */}
+              <MuscleRecoveryMap routines={routines} activeDay={selectedDay} />
+
               {/* Day Focus Header */}
               <div className="bg-white dark:bg-zinc-900/60 border border-slate-200/90 dark:border-zinc-800/80 rounded-2xl p-4 shadow-2xs transition-colors">
                 <div className="flex items-start justify-between">
@@ -471,14 +488,25 @@ export default function AthleteView({
                           </div>
                         </div>
 
-                        {/* Video / Technique Button */}
-                        <button
-                          onClick={() => setSelectedExerciseForModal(ex)}
-                          className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-[11px] font-bold flex items-center gap-1.5 border border-slate-200/80 dark:border-zinc-700/50 hover:text-slate-900 dark:hover:text-white transition-colors"
-                        >
-                          <Video className="w-3.5 h-3.5 text-emerald-600 dark:text-amber-400" />
-                          <span>Ver técnica</span>
-                        </button>
+                        {/* Video / Technique Button & Swap Button */}
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <button
+                            onClick={() => setExerciseToSwap(ex)}
+                            className="px-2 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 dark:hover:bg-amber-900/60 text-amber-700 dark:text-amber-300 text-[11px] font-bold flex items-center gap-1 border border-amber-200/80 dark:border-amber-800/60 transition-colors"
+                            title="¿Máquina ocupada? Cambiar por ejercicio equivalente"
+                          >
+                            <RefreshCw className="w-3 h-3 text-amber-600 dark:text-amber-400" />
+                            <span className="hidden sm:inline">Cambiar</span>
+                          </button>
+
+                          <button
+                            onClick={() => setSelectedExerciseForModal(ex)}
+                            className="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-300 text-[11px] font-bold flex items-center gap-1.5 border border-slate-200/80 dark:border-zinc-700/50 hover:text-slate-900 dark:hover:text-white transition-colors"
+                          >
+                            <Video className="w-3.5 h-3.5 text-emerald-600 dark:text-amber-400" />
+                            <span>Ver técnica</span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Interactive Rest Timer */}
@@ -994,6 +1022,14 @@ export default function AthleteView({
           onClose={() => setSelectedExerciseForModal(null)}
         />
       )}
+
+      {/* Exercise Swap / Alternative Modal (Fitbod Style) */}
+      <ExerciseSwapModal
+        isOpen={Boolean(exerciseToSwap)}
+        onClose={() => setExerciseToSwap(null)}
+        currentExercise={exerciseToSwap}
+        onSelectAlternative={handleSelectAlternativeExercise}
+      />
     </div>
   );
 }
