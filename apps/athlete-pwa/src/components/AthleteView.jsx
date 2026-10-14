@@ -67,44 +67,6 @@ export default function AthleteView({
   const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
 
   // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP)
-  // Elemento de audio nativo para mantener despierto iOS NowPlaying y Bluetooth AVRCP
-  const audioElRef = React.useRef(null);
-
-  // Inicializar audio válido en iOS para despertar el centro de control y Bluetooth (Honor Watch)
-  const startAudioBridge = async () => {
-    try {
-      if (typeof window !== 'undefined') {
-        if ('audioSession' in navigator) {
-          try {
-            navigator.audioSession.type = 'playback';
-          } catch (e) {}
-        }
-
-        if (!audioElRef.current) {
-          const audio = new Audio('/silence.wav');
-          audio.loop = true;
-          audio.preload = 'auto';
-          audioElRef.current = audio;
-        }
-
-        if (audioElRef.current) {
-          audioElRef.current.currentTime = 0;
-          await audioElRef.current.play();
-        }
-      }
-    } catch (e) {
-      console.warn('AudioBridge play failed:', e);
-    }
-  };
-
-  const stopAudioBridge = () => {
-    try {
-      if (audioElRef.current) {
-        audioElRef.current.pause();
-      }
-    } catch (e) {}
-  };
-
   React.useEffect(() => {
     let interval = null;
     if (isSessionActive) {
@@ -123,22 +85,14 @@ export default function AthleteView({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleSession = async () => {
-    const nextState = !isSessionActive;
-    setIsSessionActive(nextState);
-
-    // Si se activa y no está en modo música, arrancar audio bridge para sincronizar reloj
-    if (nextState && !isMusicMode) {
-      await startAudioBridge();
-    } else {
-      stopAudioBridge();
-    }
+  // Control de sesión de entrenamiento sin parpadeo en el notch de iOS
+  const handleToggleSession = () => {
+    setIsSessionActive(!isSessionActive);
   };
 
   const handleResetSession = () => {
     setIsSessionActive(false);
     setSessionSeconds(0);
-    stopAudioBridge();
   };
 
   const handleFinishAndSaveSession = () => {
@@ -162,71 +116,15 @@ export default function AthleteView({
     setTimeout(() => setSessionSavedNotice(null), 5000);
   };
 
-  // Marcar el siguiente ejercicio como listo desde el reloj
-  const handleMarkNextCompletedFromWatch = () => {
-    const uncompleted = (currentRoutineDay.exercises || []).find(e => !e.completed);
-    if (uncompleted) {
-      onUpdateRoutineExercise(selectedDay, uncompleted.id, { completed: true });
-      if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        navigator.vibrate([200, 100, 200]);
-      }
-    }
-  };
-
-  // CONTROL MULTIMEDIA BLUETOOTH EN HONOR WATCH / SMARTWATCH
-  // Solo se apodera de los controles si NO está en modo música
+  // Liberar MediaSession para evitar parpadeos en el Notch / Dynamic Island de iOS
   React.useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-
-    if (isSessionActive && !isMusicMode) {
-      const completedCount = (currentRoutineDay.exercises || []).filter(e => e.completed).length;
-      const totalCount = (currentRoutineDay.exercises || []).length;
-
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: `⏱️ ${formatTimer(sessionSeconds)} • ${selectedDay}`,
-        artist: `Listo: ${completedCount}/${totalCount} Ejercicios`,
-        album: "Team HD • Control Smartwatch",
-        artwork: [
-          { src: "/favicon.svg", sizes: "96x96", type: "image/svg+xml" },
-          { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" }
-        ]
-      });
-
-      navigator.mediaSession.playbackState = "playing";
-
-      // Botón Play / Pausa en el reloj -> Pausar / Reanudar Cronómetro
-      navigator.mediaSession.setActionHandler('play', () => {
-        setIsSessionActive(true);
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        setIsSessionActive(false);
-      });
-
-      // Botón Siguiente (⏭️) en el reloj -> Marcar Siguiente Ejercicio como Listo ✓
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        handleMarkNextCompletedFromWatch();
-      });
-
-      // Botón Anterior (⏮️) en el reloj -> Reiniciar Cronómetro
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        setSessionSeconds(0);
-      });
-
-      // Botón Detener -> Finalizar sesión
-      navigator.mediaSession.setActionHandler('stop', () => {
-        handleFinishAndSaveSession();
-      });
-    } else {
-      // Liberar controles para que Spotify / música funcione sin estorbos
+    if (typeof navigator !== 'undefined' && 'mediaSession' in navigator) {
       try {
         navigator.mediaSession.playbackState = "none";
-        navigator.mediaSession.setActionHandler('play', null);
-        navigator.mediaSession.setActionHandler('pause', null);
-        navigator.mediaSession.setActionHandler('nexttrack', null);
-        navigator.mediaSession.setActionHandler('previoustrack', null);
+        navigator.mediaSession.metadata = null;
       } catch (e) {}
     }
-  }, [isSessionActive, isMusicMode, sessionSeconds, currentRoutineDay.exercises, selectedDay]);
+  }, []);
 
   // Profile local state
   // Parse structured data if exists

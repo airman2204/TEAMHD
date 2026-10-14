@@ -145,61 +145,6 @@ export default function RestTimer({
     if (onFinish) onFinish();
   };
 
-  // =========================================================================
-  // INTEGRACIÓN CON HONOR WATCH / MEDIA SESSION BLUETOOTH
-  // =========================================================================
-  React.useEffect(() => {
-    if (typeof navigator === 'undefined' || !('mediaSession' in navigator)) return;
-
-    if (isActive && secondsLeft > 0) {
-      // Iniciar sesión multimedia visible en el reproductor de música del Honor Watch
-      navigator.mediaSession.metadata = new MediaMetadata({
-        title: `Descanso: ${secondsLeft}s`,
-        artist: `Team HD Muscle • ${exerciseName}`,
-        album: "Control de Entrenamiento en Reloj",
-        artwork: [
-          { src: "/favicon.svg", sizes: "96x96", type: "image/svg+xml" },
-          { src: "/favicon.svg", sizes: "512x512", type: "image/svg+xml" }
-        ]
-      });
-
-      navigator.mediaSession.playbackState = "playing";
-
-      // Intentar reproducir sonido silencioso para enganchar el control Bluetooth del reloj
-      const audio = getOrCreateSilenceAudio();
-      audio.play().catch(() => {});
-
-      // Botón Play / Pausa en el Honor Watch
-      navigator.mediaSession.setActionHandler('play', () => {
-        togglePause();
-      });
-      navigator.mediaSession.setActionHandler('pause', () => {
-        togglePause();
-      });
-
-      // Botón Siguiente (⏭️) en el reloj: Terminar descanso de inmediato
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        handleCompleteTimer();
-      });
-
-      // Botón Anterior (⏮️) en el reloj: Resetear cronómetro
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        resetTimer(initialSeconds);
-      });
-
-      // Botón Stop
-      navigator.mediaSession.setActionHandler('stop', () => {
-        setIsActive(false);
-        localStorage.removeItem(STORAGE_KEY);
-      });
-    } else {
-      navigator.mediaSession.playbackState = "paused";
-      if (silenceAudioElement) {
-        silenceAudioElement.pause();
-      }
-    }
-  }, [isActive, secondsLeft, exerciseName]);
-
   const startTimer = (secs) => {
     setSecondsLeft(secs);
     setIsActive(true);
