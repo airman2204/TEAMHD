@@ -26,7 +26,8 @@ import {
   Timer as TimerIcon,
   Award,
   RefreshCw,
-  Calculator
+  Calculator,
+  Activity
 } from 'lucide-react';
 import RestTimer from './RestTimer';
 import ExerciseModal from './ExerciseModal';
