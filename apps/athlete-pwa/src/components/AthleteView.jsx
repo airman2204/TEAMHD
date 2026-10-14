@@ -67,44 +67,22 @@ export default function AthleteView({
   const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
 
   // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP)
-  const audioContextRef = React.useRef(null);
-  const audioNodeRef = React.useRef(null);
+  // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP en iOS)
   const audioElRef = React.useRef(null);
 
-  // Inicializar audio válido de 1 segundo de duración con mínima ganancia para despertar WebKit iOS y Bluetooth
+  // Inicializar audio válido en iOS para despertar el centro de control y Bluetooth (Honor Watch)
   const startAudioBridge = () => {
     try {
       if (typeof window !== 'undefined') {
-        const AudioCtx = window.AudioContext || window.webkitAudioContext;
-        if (AudioCtx) {
-          if (!audioContextRef.current) {
-            audioContextRef.current = new AudioCtx();
-          }
-          if (audioContextRef.current.state === 'suspended') {
-            audioContextRef.current.resume();
-          }
-          if (!audioNodeRef.current) {
-            const osc = audioContextRef.current.createOscillator();
-            const gain = audioContextRef.current.createGain();
-            // Ganancia casi inaudible (0.001) para que iOS no lo catalogue como silencio inactivo
-            gain.gain.value = 0.001;
-            osc.frequency.value = 60; // Tono subgrave inaudible
-            osc.connect(gain);
-            gain.connect(audioContextRef.current.destination);
-            osc.start();
-            audioNodeRef.current = osc;
-          }
-        }
-
-        // Respaldo con elemento HTML5 Audio
         if (!audioElRef.current) {
-          // Generamos un audio blob con datos wav válidos
-          const audio = new Audio();
-          audio.src = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'; // fallback o stream
+          // WAV válido de 1 segundo con silencio PCM puro
+          const silentWavBase64 = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA";
+          const audio = new Audio(silentWavBase64);
           audio.loop = true;
-          audio.volume = 0.01;
+          audio.volume = 0.05;
           audioElRef.current = audio;
         }
+        audioElRef.current.play().catch(e => console.warn('Error audio play:', e));
       }
     } catch (e) {
       console.warn('AudioBridge no iniciado:', e);
@@ -113,9 +91,6 @@ export default function AthleteView({
 
   const stopAudioBridge = () => {
     try {
-      if (audioContextRef.current && audioContextRef.current.state === 'running') {
-        audioContextRef.current.suspend();
-      }
       if (audioElRef.current) {
         audioElRef.current.pause();
       }
