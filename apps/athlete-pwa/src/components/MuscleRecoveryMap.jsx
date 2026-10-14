@@ -1,15 +1,28 @@
-import React, { useState, useMemo } from 'react';
-import Model from 'react-body-highlighter';
-import { Activity, RotateCw, Flame, Award, Dumbbell, ShieldCheck } from 'lucide-react';
+import React, { useState } from 'react';
+import { Activity, ShieldCheck, Flame, Dumbbell, Sparkles, ChevronRight } from 'lucide-react';
+
+const MUSCLE_ZONES = [
+  { key: 'chest', label: 'Pectorales', category: 'Pecho', pct: 100 },
+  { key: 'abs', label: 'Abdomen & Core', category: 'Tronco', pct: 100 },
+  { key: 'shoulders', label: 'Hombros', category: 'Deltoides', pct: 100 },
+  { key: 'arms', label: 'Bíceps / Brazos', category: 'Brazos', pct: 100 },
+  { key: 'quads', label: 'Cuádriceps', category: 'Piernas', pct: 100 },
+  { key: 'back', label: 'Dorsales & Espalda', category: 'Espalda', pct: 100 },
+];
 
 export default function MuscleRecoveryMap({ routines = {}, activeDay = 'Lun' }) {
-  const [modelType, setModelType] = useState('anterior'); // 'anterior' | 'posterior'
-  const [selectedMuscleStat, setSelectedMuscleStat] = useState(null);
+  const [selectedMuscle, setSelectedMuscle] = useState(null);
 
-  // Mapear los ejercicios completados en la rutina activa a los músculos oficiales de la silueta médica
-  const { exerciseData, totalHits, activeMusclesSummary } = useMemo(() => {
-    const hitsCount = {};
-    const exercisesFound = [];
+  // Calcular impacto real basado en las series completadas
+  const { recoveryList, totalImpacts, globalScore } = React.useMemo(() => {
+    const hits = {
+      chest: 0,
+      abs: 0,
+      shoulders: 0,
+      arms: 0,
+      quads: 0,
+      back: 0
+    };
 
     Object.values(routines).forEach((dayRoutine) => {
       (dayRoutine.exercises || []).forEach((ex) => {
@@ -17,80 +30,45 @@ export default function MuscleRecoveryMap({ routines = {}, activeDay = 'Lun' }) 
         if (isHit) {
           const name = (ex.name || '').toLowerCase();
           const muscle = (ex.muscle_group || '').toLowerCase();
-          const targetMuscles = [];
 
-          if (muscle.includes('pecho') || name.includes('press') || name.includes('pecho')) {
-            targetMuscles.push('chest');
-          }
-          if (muscle.includes('abdomen') || muscle.includes('core') || name.includes('crunch')) {
-            targetMuscles.push('abs', 'obliques');
-          }
-          if (muscle.includes('bíceps') || name.includes('curl')) {
-            targetMuscles.push('biceps');
-          }
-          if (muscle.includes('tríceps') || name.includes('copa') || name.includes('fondos')) {
-            targetMuscles.push('triceps');
-          }
-          if (muscle.includes('pierna') || name.includes('sentadilla') || name.includes('prensa')) {
-            targetMuscles.push('quadriceps');
-          }
-          if (muscle.includes('femoral') || name.includes('peso muerto') || name.includes('isquio')) {
-            targetMuscles.push('hamstring');
-          }
-          if (muscle.includes('glúteo') || name.includes('hip thrust')) {
-            targetMuscles.push('gluteal');
-          }
-          if (muscle.includes('pantorrilla') || muscle.includes('gemelo') || name.includes('elevación')) {
-            targetMuscles.push('calves');
-          }
-          if (muscle.includes('hombro') || name.includes('militar') || name.includes('lateral')) {
-            targetMuscles.push('front-deltoids', 'back-deltoids');
-          }
-          if (muscle.includes('espalda') || name.includes('remo') || name.includes('jalón')) {
-            targetMuscles.push('upper-back', 'lower-back', 'trapezius');
-          }
-
-          if (targetMuscles.length > 0) {
-            targetMuscles.forEach(m => {
-              hitsCount[m] = (hitsCount[m] || 0) + 1;
-            });
-            exercisesFound.push({
-              name: ex.name,
-              muscles: targetMuscles,
-              frequency: 1
-            });
-          }
+          if (muscle.includes('pecho') || name.includes('press') || name.includes('pecho')) hits.chest += 1;
+          if (muscle.includes('abdomen') || muscle.includes('core') || name.includes('crunch')) hits.abs += 1;
+          if (muscle.includes('hombro') || name.includes('militar') || name.includes('lateral')) hits.shoulders += 1;
+          if (muscle.includes('bíceps') || muscle.includes('tríceps') || name.includes('curl')) hits.arms += 1;
+          if (muscle.includes('pierna') || name.includes('sentadilla') || name.includes('prensa')) hits.quads += 1;
+          if (muscle.includes('espalda') || name.includes('remo') || name.includes('jalón')) hits.back += 1;
         }
       });
     });
 
-    const total = Object.values(hitsCount).reduce((a, b) => a + b, 0);
+    let sum = 0;
+    let impactsCount = 0;
+
+    const list = MUSCLE_ZONES.map(z => {
+      const h = hits[z.key] || 0;
+      impactsCount += h;
+      const rec = Math.max(30, Math.min(100, 100 - (h * 30)));
+      sum += rec;
+
+      return {
+        ...z,
+        hits: h,
+        percentage: rec,
+        isFatigued: rec <= 70
+      };
+    });
 
     return {
-      exerciseData: exercisesFound,
-      totalHits: total,
-      activeMusclesSummary: hitsCount
+      recoveryList: list,
+      totalImpacts: impactsCount,
+      globalScore: Math.round(sum / MUSCLE_ZONES.length)
     };
   }, [routines]);
-
-  // Si no hay ejercicios completados, silueta en estado limpio (gris elegante)
-  // Paleta Fitbod: Naranja/Salmón (#ff725e / #f97316) para músculos entrenados
-  const highlightedColors = ['#ff725e', '#f97316', '#ea580c'];
-
-  const toggleView = () => {
-    setModelType(prev => (prev === 'anterior' ? 'posterior' : 'anterior'));
-  };
-
-  const handleMuscleClick = (stat) => {
-    if (stat && stat.muscle) {
-      setSelectedMuscleStat(stat);
-    }
-  };
 
   return (
     <div className="bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 rounded-3xl p-5 shadow-sm space-y-4 transition-colors">
       
-      {/* 1. Header con Toggle de Frente / Espalda */}
+      {/* 1. Header con Badge Fitbod Engine */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div className="w-10 h-10 rounded-2xl bg-orange-50 dark:bg-orange-950/60 text-orange-500 flex items-center justify-center font-bold border border-orange-200/60 dark:border-orange-500/20">
@@ -99,82 +77,149 @@ export default function MuscleRecoveryMap({ routines = {}, activeDay = 'Lun' }) 
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-black text-slate-900 dark:text-white tracking-tight">
-                Mapa Muscular
+                Mapa Anatómico
               </h3>
               <span className="text-[10px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-2 py-0.5 rounded-full border border-orange-200/60 dark:border-orange-500/20">
                 Fitbod HD
               </span>
             </div>
             <p className="text-[11px] text-slate-400 dark:text-zinc-500 font-medium">
-              Impacto muscular en tiempo real
+              Zonas musculares y frescura neuromuscular
             </p>
           </div>
         </div>
 
-        {/* Botón Rotar Frente / Espalda */}
-        <button
-          type="button"
-          onClick={toggleView}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 text-xs font-bold transition-all border border-slate-200/60 dark:border-zinc-700"
-        >
-          <RotateCw className="w-3.5 h-3.5" />
-          <span>{modelType === 'anterior' ? 'Ver Espalda' : 'Ver Frente'}</span>
-        </button>
+        <div className="text-right">
+          <span className="text-lg font-black font-mono text-slate-900 dark:text-white">
+            {globalScore}%
+          </span>
+          <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 block">
+            Frescura
+          </span>
+        </div>
       </div>
 
-      {/* 2. SILUETA VECTORIAL ANATÓMICA MÉDICA (react-body-highlighter) */}
-      <div className="relative flex flex-col items-center justify-center py-2 bg-slate-50/70 dark:bg-zinc-950/50 rounded-3xl border border-slate-100 dark:border-zinc-800/80 min-h-[340px]">
+      {/* 2. SILUETA MUSCULAR HD PROFESIONAL (IMAGEN OFICIAL CON ILUMINACIÓN ÁMBAR) */}
+      <div className="relative rounded-3xl overflow-hidden bg-[#121316] border border-zinc-800/80 flex flex-col items-center justify-center p-3 sm:p-5 shadow-inner">
         
-        <Model
-          data={exerciseData}
-          type={modelType}
-          bodyColor="#3f3f46" // Gris carbón anatómico moderno
-          highlightedColors={highlightedColors}
-          onClick={handleMuscleClick}
-          style={{ width: '13rem', margin: '0 auto' }}
-          svgStyle={{ filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.15))' }}
-        />
+        {/* Glow de ambientación naranja/ámbar */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-orange-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-medium mt-2">
-          {modelType === 'anterior' ? 'Vista Anterior (Frente)' : 'Vista Posterior (Espalda)'} • Toca un músculo para detalles
+        {/* Imagen Anatómica HD Ultra-Clean */}
+        <div className="relative max-w-[240px] sm:max-w-[270px] w-full flex items-center justify-center select-none">
+          <img
+            src="/anatomy-body.jpg"
+            alt="Silueta Anatómica Muscular"
+            className="w-full h-auto object-contain drop-shadow-[0_10px_25px_rgba(0,0,0,0.5)] rounded-2xl"
+          />
+
+          {/* Hotspots / Pills táctiles con porcentaje en las zonas clave */}
+          <div className="absolute inset-0 pointer-events-none">
+            {/* Pectorales */}
+            <div className="absolute top-[26%] left-1/2 -translate-x-1/2 pointer-events-auto">
+              <button
+                type="button"
+                onClick={() => setSelectedMuscle(recoveryList.find(r => r.key === 'chest'))}
+                className="px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-orange-500/60 text-orange-400 font-mono text-[9px] font-black shadow-lg hover:scale-110 transition-transform flex items-center gap-1"
+              >
+                <span>Pecho</span>
+                <span className="text-white">{recoveryList.find(r => r.key === 'chest')?.percentage}%</span>
+              </button>
+            </div>
+
+            {/* Abdomen / Core */}
+            <div className="absolute top-[38%] left-1/2 -translate-x-1/2 pointer-events-auto">
+              <button
+                type="button"
+                onClick={() => setSelectedMuscle(recoveryList.find(r => r.key === 'abs'))}
+                className="px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-orange-500/60 text-orange-400 font-mono text-[9px] font-black shadow-lg hover:scale-110 transition-transform flex items-center gap-1"
+              >
+                <span>Core</span>
+                <span className="text-white">{recoveryList.find(r => r.key === 'abs')?.percentage}%</span>
+              </button>
+            </div>
+
+            {/* Bíceps / Brazos */}
+            <div className="absolute top-[32%] left-[12%] pointer-events-auto">
+              <button
+                type="button"
+                onClick={() => setSelectedMuscle(recoveryList.find(r => r.key === 'arms'))}
+                className="px-1.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-zinc-700 text-zinc-300 font-mono text-[9px] font-bold shadow-lg hover:scale-110 transition-transform"
+              >
+                Brazos {recoveryList.find(r => r.key === 'arms')?.percentage}%
+              </button>
+            </div>
+
+            {/* Piernas / Cuádriceps */}
+            <div className="absolute top-[60%] left-1/2 -translate-x-1/2 pointer-events-auto">
+              <button
+                type="button"
+                onClick={() => setSelectedMuscle(recoveryList.find(r => r.key === 'quads'))}
+                className="px-2 py-0.5 rounded-full bg-black/75 backdrop-blur-md border border-orange-500/60 text-orange-400 font-mono text-[9px] font-black shadow-lg hover:scale-110 transition-transform flex items-center gap-1"
+              >
+                <span>Piernas</span>
+                <span className="text-white">{recoveryList.find(r => r.key === 'quads')?.percentage}%</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Subtítulo Guía */}
+        <span className="text-[10px] text-zinc-400 font-medium mt-3">
+          Toca cualquier zona para ver el desgaste neuromuscular
         </span>
       </div>
 
-      {/* 3. Resumen y Leyenda de Recuperación */}
-      {selectedMuscleStat ? (
+      {/* 3. Panel de Detalle o Lista de Músculos */}
+      {selectedMuscle ? (
         <div className="p-3 bg-orange-50/70 dark:bg-orange-950/30 rounded-2xl border border-orange-200 dark:border-orange-500/30 flex items-center justify-between text-xs animate-in fade-in">
           <div>
-            <span className="font-black text-slate-900 dark:text-white capitalize block">
-              Músculo: {selectedMuscleStat.muscle.replace('-', ' ')}
+            <span className="font-black text-slate-900 dark:text-white block">
+              {selectedMuscle.label}
             </span>
             <span className="text-[10px] text-orange-700 dark:text-orange-300 font-medium">
-              {selectedMuscleStat.data.exercises?.length > 0
-                ? `Impactado por: ${selectedMuscleStat.data.exercises.join(', ')}`
-                : 'Músculo completamente descansado'}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={() => setSelectedMuscleStat(null)}
-            className="text-[10px] font-bold text-slate-400 hover:text-slate-700"
-          >
-            Cerrar
-          </button>
-        </div>
-      ) : (
-        <div className="flex items-center justify-between px-1 text-xs">
-          <div className="flex items-center gap-3 text-[11px] font-medium text-slate-500 dark:text-zinc-400">
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#3f3f46] inline-block" /> Descansado
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#ff725e] inline-block" /> Trabajado
+              {selectedMuscle.hits > 0 ? `${selectedMuscle.hits} ejercicios realizados esta semana` : 'Músculo completamente fresco'}
             </span>
           </div>
 
-          <span className="text-[11px] font-mono font-bold text-orange-600 dark:text-orange-400">
-            {totalHits > 0 ? `${totalHits} impactos registrados` : 'Listo para entrenar'}
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-mono font-black px-2.5 py-0.5 rounded-lg bg-orange-500 text-black">
+              {selectedMuscle.percentage}%
+            </span>
+            <button
+              type="button"
+              onClick={() => setSelectedMuscle(null)}
+              className="text-[10px] font-bold text-slate-400 hover:text-slate-700"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          {recoveryList.map((m) => (
+            <div
+              key={m.key}
+              onClick={() => setSelectedMuscle(m)}
+              className="p-2.5 rounded-2xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200/70 dark:border-zinc-800/80 flex items-center justify-between cursor-pointer hover:border-orange-400 transition-colors"
+            >
+              <div>
+                <span className="text-xs font-bold text-slate-900 dark:text-white block truncate">
+                  {m.label}
+                </span>
+                <span className="text-[9px] text-slate-400 dark:text-zinc-500 font-mono">
+                  {m.category}
+                </span>
+              </div>
+              <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-lg ${
+                m.isFatigued
+                  ? 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20'
+                  : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20'
+              }`}>
+                {m.percentage}%
+              </span>
+            </div>
+          ))}
         </div>
       )}
 
