@@ -14,22 +14,5 @@
   <body class="bg-[#09090b] text-zinc-100 antialiased overflow-x-hidden selection:bg-amber-500 selection:text-black">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
-    <script>
-      // Desregistrar cualquier Service Worker antiguo y purgar cachés que pidan bundles 404
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const registration of registrations) {
-            registration.unregister();
-          }
-        });
-        if ('caches' in window) {
-          caches.keys().then((names) => {
-            for (const name of names) {
-              caches.delete(name);
-            }
-          });
-        }
-      }
-    </script>
   </body>
 </html>

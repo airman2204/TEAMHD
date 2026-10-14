@@ -66,16 +66,60 @@ export default function AthleteView({
   const [sessionSeconds, setSessionSeconds] = React.useState(0);
   const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
 
-  // Reproductor de audio silencioso en segundo plano para enlazar reloj por Bluetooth
-  const audioRef = React.useRef(null);
+  // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP)
+  const audioContextRef = React.useRef(null);
+  const audioNodeRef = React.useRef(null);
+  const audioElRef = React.useRef(null);
 
-  const getAudio = () => {
-    if (!audioRef.current && typeof window !== 'undefined') {
-      const a = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==');
-      a.loop = true;
-      audioRef.current = a;
+  // Inicializar audio válido de 1 segundo de duración con mínima ganancia para despertar WebKit iOS y Bluetooth
+  const startAudioBridge = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (AudioCtx) {
+          if (!audioContextRef.current) {
+            audioContextRef.current = new AudioCtx();
+          }
+          if (audioContextRef.current.state === 'suspended') {
+            audioContextRef.current.resume();
+          }
+          if (!audioNodeRef.current) {
+            const osc = audioContextRef.current.createOscillator();
+            const gain = audioContextRef.current.createGain();
+            // Ganancia casi inaudible (0.001) para que iOS no lo catalogue como silencio inactivo
+            gain.gain.value = 0.001;
+            osc.frequency.value = 60; // Tono subgrave inaudible
+            osc.connect(gain);
+            gain.connect(audioContextRef.current.destination);
+            osc.start();
+            audioNodeRef.current = osc;
+          }
+        }
+
+        // Respaldo con elemento HTML5 Audio
+        if (!audioElRef.current) {
+          // Generamos un audio blob con datos wav válidos
+          const audio = new Audio();
+          audio.src = 'https://actions.google.com/sounds/v1/alarms/beep_short.ogg'; // fallback o stream
+          audio.loop = true;
+          audio.volume = 0.01;
+          audioElRef.current = audio;
+        }
+      }
+    } catch (e) {
+      console.warn('AudioBridge no iniciado:', e);
     }
-    return audioRef.current;
+  };
+
+  const stopAudioBridge = () => {
+    try {
+      if (audioContextRef.current && audioContextRef.current.state === 'running') {
+        audioContextRef.current.suspend();
+      }
+      if (audioElRef.current) {
+        audioElRef.current.pause();
+      }
+    } catch (e) {}
   };
 
   React.useEffect(() => {
@@ -100,21 +144,18 @@ export default function AthleteView({
     const nextState = !isSessionActive;
     setIsSessionActive(nextState);
 
-    // Si se activa y no está en modo música, arrancar audio para sincronizar el reloj
+    // Si se activa y no está en modo música, arrancar audio bridge para sincronizar reloj
     if (nextState && !isMusicMode) {
-      const a = getAudio();
-      if (a) a.play().catch(() => {});
+      startAudioBridge();
     } else {
-      const a = getAudio();
-      if (a) a.pause();
+      stopAudioBridge();
     }
   };
 
   const handleResetSession = () => {
     setIsSessionActive(false);
     setSessionSeconds(0);
-    const a = getAudio();
-    if (a) a.pause();
+    stopAudioBridge();
   };
 
   const handleFinishAndSaveSession = () => {

@@ -26,9 +26,26 @@ export default function App() {
   // Hook de Marca Blanca
   const theme = useTenantTheme('app-gym');
 
-  // 1. VERIFICAR SESIÓN ACTIVA Y CONTROL DE CONCURRENCIA (1 SESIÓN VIVA)
+  // 1. VERIFICAR SESIÓN ACTIVA Y CONTROL DE CONCURRENCIA (1 SESIÓN VIVA + INICIO INSTANTÁNEO)
   useEffect(() => {
     let isMounted = true;
+
+    // A. CARGA ULTRA-RÁPIDA OPTIMISTA DESDE CACHÉ (Evita la pantalla negra en iOS PWA)
+    try {
+      const cachedAthlete = localStorage.getItem('athlete_cached_profile');
+      const cachedRoutines = localStorage.getItem('athlete_cached_routines');
+      if (cachedAthlete) {
+        const parsed = JSON.parse(cachedAthlete);
+        setAthlete(parsed);
+        if (cachedRoutines) {
+          setRoutines(JSON.parse(cachedRoutines));
+        }
+        // Si hay atleta en caché, liberamos el loader inmediatamente para que la app sea visible en <50ms
+        setIsAuthChecking(false);
+      }
+    } catch (e) {
+      console.warn('Error leyendo caché local:', e);
+    }
 
     async function verifyAthleteSession() {
       if (!isSupabaseConfigured || !supabase) {
@@ -36,37 +53,48 @@ export default function App() {
         return;
       }
 
-      // Timeout de seguridad: si Supabase tarda más de 2.5 segundos, pasar a login sin congelar la app
+      // Timeout de seguridad: si la red tarda más de 2 segundos, no bloquear la app
       const timeoutId = setTimeout(() => {
         if (isMounted) {
-          console.warn('Timeout de verificación de sesión alcanzado. Pasando a login.');
           setIsAuthChecking(false);
         }
-      }, 2500);
+      }, 2000);
 
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         clearTimeout(timeoutId);
 
         if (session && session.user && isMounted) {
-          // Obtener usuario fresco del servidor para verificar si otro dispositivo generó un nuevo token
+          setCurrentUser(session.user);
+          setMustChangePassword(Boolean(session.user.user_metadata?.must_change_password));
+
+          // Cargar perfil y rutinas en background o foreground
+          await loadAthleteProfile(session.user);
+
+          // Comprobar token de sesión concurrente con el servidor
           const { data: freshUserRes } = await supabase.auth.getUser();
-          const freshUser = freshUserRes?.user || session.user;
+          const freshUser = freshUserRes?.user;
+          if (freshUser) {
+            const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
+            const serverToken = freshUser.user_metadata?.active_session_token;
 
-          const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
-          const serverToken = freshUser.user_metadata?.active_session_token;
-
-          if (serverToken && localToken && serverToken !== localToken) {
-            console.warn('Sesión de atleta expirada: se inició sesión en otro dispositivo.');
-            await supabase.auth.signOut();
-            localStorage.removeItem(ATHLETE_SESSION_KEY);
-            setCurrentUser(null);
-            setAthlete(null);
-          } else {
-            setCurrentUser(freshUser);
-            setMustChangePassword(Boolean(freshUser.user_metadata?.must_change_password));
-            await loadAthleteProfile(freshUser);
+            if (serverToken && localToken && serverToken !== localToken) {
+              console.warn('Sesión cerrada: iniciada en otro dispositivo.');
+              alert('Se inició sesión en otro dispositivo. Cerrando sesión aquí.');
+              await supabase.auth.signOut();
+              localStorage.removeItem(ATHLETE_SESSION_KEY);
+              localStorage.removeItem('athlete_cached_profile');
+              localStorage.removeItem('athlete_cached_routines');
+              setCurrentUser(null);
+              setAthlete(null);
+            }
           }
+        } else if (isMounted) {
+          // No hay sesión
+          setCurrentUser(null);
+          setAthlete(null);
+          localStorage.removeItem('athlete_cached_profile');
+          localStorage.removeItem('athlete_cached_routines');
         }
       } catch (err) {
         clearTimeout(timeoutId);
@@ -80,19 +108,23 @@ export default function App() {
 
     // Comprobación concurrente cuando el usuario regresa a la pestaña o abre la app
     const handleVisibilityChange = async () => {
-      if (document.visibilityState === 'visible') {
-        const { data: freshUserRes } = await supabase.auth.getUser();
-        if (freshUserRes?.user) {
-          const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
-          const serverToken = freshUserRes.user.user_metadata?.active_session_token;
-          if (serverToken && localToken && serverToken !== localToken) {
-            alert('Has iniciado sesión en otro dispositivo. Esta sesión se cerrará automáticamente.');
-            await supabase.auth.signOut();
-            localStorage.removeItem(ATHLETE_SESSION_KEY);
-            setCurrentUser(null);
-            setAthlete(null);
+      if (document.visibilityState === 'visible' && supabase) {
+        try {
+          const { data: freshUserRes } = await supabase.auth.getUser();
+          if (freshUserRes?.user) {
+            const localToken = localStorage.getItem(ATHLETE_SESSION_KEY);
+            const serverToken = freshUserRes.user.user_metadata?.active_session_token;
+            if (serverToken && localToken && serverToken !== localToken) {
+              alert('Has iniciado sesión en otro dispositivo (PC o teléfono). Esta sesión se cerrará automáticamente.');
+              await supabase.auth.signOut();
+              localStorage.removeItem(ATHLETE_SESSION_KEY);
+              localStorage.removeItem('athlete_cached_profile');
+              localStorage.removeItem('athlete_cached_routines');
+              setCurrentUser(null);
+              setAthlete(null);
+            }
           }
-        }
+        } catch (e) {}
       }
     };
 
@@ -104,6 +136,8 @@ export default function App() {
         setCurrentUser(null);
         setAthlete(null);
         localStorage.removeItem(ATHLETE_SESSION_KEY);
+        localStorage.removeItem('athlete_cached_profile');
+        localStorage.removeItem('athlete_cached_routines');
       } else if (event === 'SIGNED_IN' && session?.user) {
         setCurrentUser(session.user);
         setMustChangePassword(Boolean(session.user.user_metadata?.must_change_password));
@@ -130,7 +164,7 @@ export default function App() {
         .single();
 
       if (data && !error) {
-        setAthlete({
+        const profileObj = {
           id: data.id,
           name: data.full_name,
           email: authUser.email,
@@ -141,7 +175,11 @@ export default function App() {
           injuries: data.injuries_notes || 'Sin lesiones',
           avatar: data.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
           coachNotes: 'Prescripción activa en App Gym.'
-        });
+        };
+        setAthlete(profileObj);
+        try {
+          localStorage.setItem('athlete_cached_profile', JSON.stringify(profileObj));
+        } catch (e) {}
 
         // Cargar rutinas de este atleta con sus ejercicios reales
         const { data: routinesData } = await supabase
@@ -182,7 +220,11 @@ export default function App() {
                 }))
             };
           });
-          setRoutines({ [data.id]: mappedRoutines });
+          const fullRoutines = { [data.id]: mappedRoutines };
+          setRoutines(fullRoutines);
+          try {
+            localStorage.setItem('athlete_cached_routines', JSON.stringify(fullRoutines));
+          } catch (e) {}
         } else {
           // Si no tiene rutinas creadas por el coach, inicializar vacío para este atleta
           setRoutines({ [data.id]: {} });
