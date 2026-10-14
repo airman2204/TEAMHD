@@ -67,25 +67,33 @@ export default function AthleteView({
   const [sessionSavedNotice, setSessionSavedNotice] = React.useState(null);
 
   // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP)
-  // Reproductor de audio y AudioContext para enlazar reloj por Bluetooth (AVRCP en iOS)
+  // Elemento de audio nativo para mantener despierto iOS NowPlaying y Bluetooth AVRCP
   const audioElRef = React.useRef(null);
 
   // Inicializar audio válido en iOS para despertar el centro de control y Bluetooth (Honor Watch)
-  const startAudioBridge = () => {
+  const startAudioBridge = async () => {
     try {
       if (typeof window !== 'undefined') {
+        if ('audioSession' in navigator) {
+          try {
+            navigator.audioSession.type = 'playback';
+          } catch (e) {}
+        }
+
         if (!audioElRef.current) {
-          // WAV válido de 1 segundo con silencio PCM puro
-          const silentWavBase64 = "data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YRAAAAAAAAAAAAAAAAAAAAAAAAAA";
-          const audio = new Audio(silentWavBase64);
+          const audio = new Audio('/silence.wav');
           audio.loop = true;
-          audio.volume = 0.05;
+          audio.preload = 'auto';
           audioElRef.current = audio;
         }
-        audioElRef.current.play().catch(e => console.warn('Error audio play:', e));
+
+        if (audioElRef.current) {
+          audioElRef.current.currentTime = 0;
+          await audioElRef.current.play();
+        }
       }
     } catch (e) {
-      console.warn('AudioBridge no iniciado:', e);
+      console.warn('AudioBridge play failed:', e);
     }
   };
 
@@ -115,13 +123,13 @@ export default function AthleteView({
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleToggleSession = () => {
+  const handleToggleSession = async () => {
     const nextState = !isSessionActive;
     setIsSessionActive(nextState);
 
     // Si se activa y no está en modo música, arrancar audio bridge para sincronizar reloj
     if (nextState && !isMusicMode) {
-      startAudioBridge();
+      await startAudioBridge();
     } else {
       stopAudioBridge();
     }
