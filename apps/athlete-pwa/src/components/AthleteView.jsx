@@ -25,13 +25,15 @@ import {
   RotateCcw,
   Timer as TimerIcon,
   Award,
-  RefreshCw
+  RefreshCw,
+  Calculator
 } from 'lucide-react';
 import RestTimer from './RestTimer';
 import ExerciseModal from './ExerciseModal';
 import ThemeToggle from './ThemeToggle';
 import MuscleRecoveryMap from './MuscleRecoveryMap';
 import ExerciseSwapModal from './ExerciseSwapModal';
+import PlateCalculatorModal from './PlateCalculatorModal';
 
 const DAYS_OF_WEEK = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 
@@ -54,6 +56,7 @@ export default function AthleteView({
   const [selectedDay, setSelectedDay] = React.useState('Lun');
   const [selectedExerciseForModal, setSelectedExerciseForModal] = React.useState(null);
   const [exerciseToSwap, setExerciseToSwap] = React.useState(null);
+  const [plateCalculatorExercise, setPlateCalculatorExercise] = React.useState(null);
 
   // Mapear día activo de la rutina
   const currentRoutineDay = routines[selectedDay] || {
@@ -554,23 +557,45 @@ export default function AthleteView({
                             const newSets = sets.map((s, idx) => idx === setIndex ? { ...s, ...updatedFields } : s);
                             const allDone = newSets.every(s => s.completed);
                             const latestWeight = newSets[setIndex].actualWeight || ex.loggedWeight;
+                            const latestReps = newSets[setIndex].actualReps || 10;
                             
+                            // Cálculo de 1RM Estimado según fórmula de Epley (Estilo Fitbod)
+                            const estimated1RM = Math.round(latestWeight * (1 + latestReps / 30));
+
+                            // Auto-Progresión Fitbod: si superó o igualó las reps meta con éxito en la última serie, sugerir aumento de +2.5kg para la siguiente sesión
+                            let nextProgressionWeight = ex.prescribedWeight;
+                            if (updatedFields.completed && latestReps >= (parseInt(targetRepsText) || 10)) {
+                              nextProgressionWeight = latestWeight + 2.5;
+                            }
+
                             onUpdateRoutineExercise(selectedDay, ex.id, {
                               setsLog: newSets,
                               completed: allDone,
-                              loggedWeight: latestWeight
+                              loggedWeight: latestWeight,
+                              estimated1RM,
+                              suggestedNextWeight: nextProgressionWeight
                             });
                           };
+
+                          // Calcular el 1RM estimado actual del ejercicio
+                          const current1RM = ex.estimated1RM || (ex.loggedWeight ? Math.round(ex.loggedWeight * (1 + 10 / 30)) : 0);
 
                           return (
                             <div className="space-y-2">
                               <div className="flex items-center justify-between text-[11px] font-bold text-slate-700 dark:text-zinc-300 px-1">
                                 <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-400">
-                                  <span>📋 Registro por Serie ({targetSetsCount} Series Prescritas)</span>
+                                  <span>📋 Registro por Serie ({targetSetsCount} Series)</span>
                                 </span>
-                                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
-                                  Meta: {targetRepsText} reps
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  {current1RM > 0 && (
+                                    <span className="text-[10px] bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded-md font-mono border border-blue-200/60 dark:border-blue-800/60" title="1RM Estimado (Fuerza Máxima)">
+                                      1RM Est: {current1RM}kg
+                                    </span>
+                                  )}
+                                  <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-mono">
+                                    Meta: {targetRepsText} reps
+                                  </span>
+                                </div>
                               </div>
 
                               {/* Tabla responsiva de series sin desbordamiento móvil */}
@@ -591,14 +616,20 @@ export default function AthleteView({
                                       }`}>
                                         S{set.setNumber}
                                       </span>
-                                      <div className="flex flex-col min-w-0">
-                                        <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 leading-none">
-                                          Meta
+                                      <button
+                                        type="button"
+                                        onClick={() => setPlateCalculatorExercise({ name: ex.name, targetWeight: ex.prescribedWeight || 40 })}
+                                        className="flex flex-col min-w-0 text-left hover:opacity-80 transition-opacity"
+                                        title="Abrir calculadora de discos para este peso"
+                                      >
+                                        <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 leading-none flex items-center gap-0.5">
+                                          <span>Meta</span>
+                                          <Calculator className="w-2.5 h-2.5 text-blue-500" />
                                         </span>
-                                        <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300 font-mono leading-tight truncate">
+                                        <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 font-mono leading-tight truncate underline decoration-dotted">
                                           {ex.prescribedWeight || 0}kg
                                         </span>
-                                      </div>
+                                      </button>
                                     </div>
 
                                     {/* Inputs Peso Real y Reps Reales */}
@@ -1029,6 +1060,14 @@ export default function AthleteView({
         onClose={() => setExerciseToSwap(null)}
         currentExercise={exerciseToSwap}
         onSelectAlternative={handleSelectAlternativeExercise}
+      />
+
+      {/* Plate Calculator Modal (Fitbod Style) */}
+      <PlateCalculatorModal
+        isOpen={Boolean(plateCalculatorExercise)}
+        onClose={() => setPlateCalculatorExercise(null)}
+        targetWeightKg={plateCalculatorExercise?.targetWeight || 60}
+        exerciseName={plateCalculatorExercise?.name || 'Ejercicio'}
       />
     </div>
   );
