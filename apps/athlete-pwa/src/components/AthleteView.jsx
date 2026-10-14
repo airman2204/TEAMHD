@@ -58,9 +58,6 @@ export default function AthleteView({
     exercises: []
   };
 
-  // Modo de convivencia con música / Spotify (false = reloj controla cronómetro, true = reloj controla Spotify)
-  const [isMusicMode, setIsMusicMode] = React.useState(false);
-
   // Sesión de entrenamiento activo (cronómetro global)
   const [isSessionActive, setIsSessionActive] = React.useState(false);
   const [sessionSeconds, setSessionSeconds] = React.useState(0);
@@ -336,49 +333,22 @@ export default function AthleteView({
                     <>
                       <button
                         onClick={handleFinishAndSaveSession}
-                        className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-600/20"
+                        className="py-2.5 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-600/20 shrink-0"
                         title="Finalizar y guardar tiempo total en base de datos"
                       >
                         <Award className="w-3.5 h-3.5" />
-                        <span>Finalizar & Guardar</span>
+                        <span className="hidden xs:inline">Finalizar &</span> Guardar
                       </button>
 
                       <button
                         onClick={handleResetSession}
-                        className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors"
+                        className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors shrink-0"
                         title="Reiniciar cronómetro"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                       </button>
                     </>
                   )}
-                </div>
-
-                {/* Smartwatch Control vs Spotify / Music Mode Switch */}
-                <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    {isMusicMode ? (
-                      <span className="text-purple-600 dark:text-purple-400 flex items-center gap-1">
-                        🎵 <span>Modo Música Activo (Spotify / Libre)</span>
-                      </span>
-                    ) : (
-                      <span className="text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
-                        ⌚ <span>Modo Reloj Gym (Cronómetro & Sets)</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <button
-                    onClick={() => setIsMusicMode(!isMusicMode)}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-black tracking-wide transition-all border ${
-                      isMusicMode
-                        ? 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/60 dark:hover:bg-purple-900 text-purple-700 dark:text-purple-300 border-purple-300 dark:border-purple-800'
-                        : 'bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-950/60 dark:hover:bg-emerald-900 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
-                    }`}
-                    title="Alternar si estás escuchando Spotify o controlando el entrenamiento"
-                  >
-                    {isMusicMode ? 'Cambiar a Control Reloj' : 'Estoy Escuchando Música'}
-                  </button>
                 </div>
 
                 {/* Notificación de Guardado */}
@@ -511,11 +481,11 @@ export default function AthleteView({
                         </button>
                       </div>
 
-                      {/* Interactive Rest Timer con soporte Honor Watch */}
-                      <div className="mt-3 flex items-center justify-between">
+                      {/* Interactive Rest Timer */}
+                      <div className="mt-3 flex items-center justify-between gap-2 flex-wrap">
                         <RestTimer initialSeconds={ex.restSeconds || 90} exerciseName={ex.name} />
                         
-                        <label className="flex items-center gap-2 cursor-pointer select-none bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-700/40 transition-colors">
+                        <label className="flex items-center gap-2 cursor-pointer select-none bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800/60 dark:hover:bg-zinc-800 px-3 py-1.5 rounded-xl border border-slate-200/80 dark:border-zinc-700/40 transition-colors shrink-0">
                           <input
                             type="checkbox"
                             checked={!!ex.completed}
@@ -575,37 +545,37 @@ export default function AthleteView({
                                 </span>
                               </div>
 
-                              {/* Tabla responsiva de series */}
+                              {/* Tabla responsiva de series sin desbordamiento móvil */}
                               <div className="bg-slate-50/80 dark:bg-zinc-950/70 rounded-2xl border border-slate-200/80 dark:border-zinc-800 overflow-hidden divide-y divide-slate-200/60 dark:divide-zinc-800/70">
                                 {sets.map((set, sIdx) => (
                                   <div 
                                     key={sIdx}
-                                    className={`px-3 py-2 flex items-center justify-between gap-2 transition-colors ${
+                                    className={`px-2.5 py-2 flex items-center justify-between gap-1.5 transition-colors overflow-x-hidden ${
                                       set.completed ? 'bg-emerald-50/40 dark:bg-emerald-950/20' : ''
                                     }`}
                                   >
                                     {/* Indicador de Serie */}
-                                    <div className="flex items-center gap-2">
-                                      <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs font-black font-mono ${
+                                    <div className="flex items-center gap-1.5 shrink-0 min-w-0">
+                                      <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[11px] font-black font-mono shrink-0 ${
                                         set.completed
                                           ? 'bg-emerald-600 text-white'
                                           : 'bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300'
                                       }`}>
                                         S{set.setNumber}
                                       </span>
-                                      <div className="flex flex-col">
-                                        <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-zinc-500">
-                                          Sugerido
+                                      <div className="flex flex-col min-w-0">
+                                        <span className="text-[9px] uppercase font-bold text-slate-400 dark:text-zinc-500 leading-none">
+                                          Meta
                                         </span>
-                                        <span className="text-xs font-bold text-slate-700 dark:text-zinc-300 font-mono">
-                                          {ex.prescribedWeight || 0} kg
+                                        <span className="text-[11px] font-bold text-slate-700 dark:text-zinc-300 font-mono leading-tight truncate">
+                                          {ex.prescribedWeight || 0}kg
                                         </span>
                                       </div>
                                     </div>
 
                                     {/* Inputs Peso Real y Reps Reales */}
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                      <div className="flex items-center gap-0.5">
                                         <input
                                           type="number"
                                           step="0.5"
@@ -615,12 +585,12 @@ export default function AthleteView({
                                             const val = parseFloat(e.target.value) || 0;
                                             handleUpdateSet(sIdx, { actualWeight: val });
                                           }}
-                                          className="w-16 px-1.5 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
+                                          className="w-12 sm:w-14 px-1 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
                                         />
-                                        <span className="text-[10px] font-bold text-slate-400">kg</span>
+                                        <span className="text-[9px] font-bold text-slate-400">kg</span>
                                       </div>
 
-                                      <div className="flex items-center gap-1">
+                                      <div className="flex items-center gap-0.5">
                                         <input
                                           type="number"
                                           value={set.actualReps !== undefined ? set.actualReps : ""}
@@ -629,16 +599,16 @@ export default function AthleteView({
                                             const val = parseInt(e.target.value) || 0;
                                             handleUpdateSet(sIdx, { actualReps: val });
                                           }}
-                                          className="w-12 px-1 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
+                                          className="w-10 sm:w-12 px-1 py-1 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white rounded-lg text-xs font-mono font-bold text-center focus:outline-none focus:border-emerald-500 shadow-2xs"
                                         />
-                                        <span className="text-[10px] font-bold text-slate-400">reps</span>
+                                        <span className="text-[9px] font-bold text-slate-400">reps</span>
                                       </div>
 
                                       {/* Check botón de la serie */}
                                       <button
                                         type="button"
                                         onClick={() => handleUpdateSet(sIdx, { completed: !set.completed })}
-                                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
+                                        className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all shrink-0 ${
                                           set.completed
                                             ? 'bg-emerald-600 text-white shadow-xs'
                                             : 'bg-white dark:bg-zinc-800 text-slate-400 border border-slate-200 dark:border-zinc-700 hover:border-emerald-500'

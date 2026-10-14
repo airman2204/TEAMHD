@@ -1,19 +1,17 @@
 import React from 'react';
-import { Play, Pause, RotateCcw, Timer, Watch, Bell, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Timer, Bell, CheckCircle2 } from 'lucide-react';
 
 const STORAGE_KEY = 'athlete_pwa_rest_timer_target';
 
-// Reproductor de silencio infinito para mantener activo el Bluetooth AVRCP en segundo plano
-let silenceAudioElement = null;
+// Reproductor de alarma precargado
+let alarmAudio = null;
 
-function getOrCreateSilenceAudio() {
-  if (!silenceAudioElement && typeof window !== 'undefined') {
-    silenceAudioElement = new Audio();
-    // Archivo de audio WAV silencioso codificado en base64 (1 segundo en bucle)
-    silenceAudioElement.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
-    silenceAudioElement.loop = true;
+function getAlarmAudio() {
+  if (!alarmAudio && typeof window !== 'undefined') {
+    alarmAudio = new Audio('/alarm.wav');
+    alarmAudio.preload = 'auto';
   }
-  return silenceAudioElement;
+  return alarmAudio;
 }
 
 export default function RestTimer({ 
@@ -24,12 +22,11 @@ export default function RestTimer({
   const [isOpen, setIsOpen] = React.useState(false);
   const [secondsLeft, setSecondsLeft] = React.useState(initialSeconds);
   const [isActive, setIsActive] = React.useState(false);
-  const [watchSyncEnabled, setWatchSyncEnabled] = React.useState(true);
   const [notificationPermission, setNotificationPermission] = React.useState(
     typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'default'
   );
 
-  // Solicitar permiso de notificaciones para el reloj
+  // Solicitar permiso de notificaciones para la pantalla
   const requestNotificationAccess = async () => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       try {
@@ -41,33 +38,24 @@ export default function RestTimer({
     }
   };
 
-  // Disparar vibración y notificación nativa a la pantalla de bloqueo y reloj
-  const triggerWatchAlarm = (msg = "¡Descanso terminado! A darle a la siguiente serie 🔥") => {
-    // 1. Vibración en hardware celular
+  // Disparar sonido real y notificación al cumplirse el tiempo
+  const triggerRestAlarm = (msg = "¡Descanso terminado! A darle a la siguiente serie 🔥") => {
+    // 1. Reproducir sonido de alarma audible
+    try {
+      const audio = getAlarmAudio();
+      if (audio) {
+        audio.currentTime = 0;
+        audio.volume = 1.0;
+        audio.play().catch(e => console.warn('Audio play failed:', e));
+      }
+    } catch (e) {}
+
+    // 2. Vibración háptica en el celular
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
       try {
         navigator.vibrate([400, 200, 400, 200, 600]);
       } catch (e) {}
     }
-
-    // 2. Beep audible con Web Audio API para que suene incluso con pantalla bloqueada
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (AudioCtx) {
-        const ctx = new AudioCtx();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(880, ctx.currentTime); // Tono de alarma agradable A5
-        osc.frequency.setValueAtTime(1174.66, ctx.currentTime + 0.15); // D6
-        gain.gain.setValueAtTime(0.3, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.4);
-      }
-    } catch (e) {}
 
     // 3. Notificación a pantalla de bloqueo mediante Service Worker (iOS PWA & Android)
     if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
@@ -145,18 +133,30 @@ export default function RestTimer({
   const handleCompleteTimer = () => {
     setIsActive(false);
     localStorage.removeItem(STORAGE_KEY);
-    triggerWatchAlarm();
+    triggerRestAlarm();
     if (onFinish) onFinish();
   };
 
   const startTimer = (secs) => {
+    // Desbloquear audio en el gesto táctil del usuario
+    try {
+      const audio = getAlarmAudio();
+      if (audio) {
+        audio.volume = 0.01;
+        audio.play().then(() => {
+          audio.pause();
+          audio.currentTime = 0;
+          audio.volume = 1.0;
+        }).catch(() => {});
+      }
+    } catch (e) {}
+
     setSecondsLeft(secs);
     setIsActive(true);
     setIsOpen(true);
     const target = Date.now() + secs * 1000;
     localStorage.setItem(STORAGE_KEY, target.toString());
 
-    // Asegurar permiso de notificación
     if (notificationPermission !== 'granted') {
       requestNotificationAccess();
     }
@@ -191,26 +191,25 @@ export default function RestTimer({
     return (
       <button
         onClick={() => startTimer(initialSeconds)}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-amber-500/10 dark:hover:bg-amber-500/20 dark:text-amber-400 border border-emerald-200 dark:border-amber-500/30 rounded-xl text-xs font-bold transition-all hover:scale-102 active:scale-98 shadow-2xs"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:hover:bg-emerald-900/50 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs font-bold transition-all hover:scale-102 active:scale-98 shadow-2xs"
       >
-        <Timer className="w-3.5 h-3.5 animate-pulse text-emerald-600 dark:text-amber-400" />
+        <Timer className="w-3.5 h-3.5 animate-pulse text-emerald-600 dark:text-emerald-400" />
         <span>Descanso ({initialSeconds}s)</span>
-        <Watch className="w-3 h-3 text-emerald-600/80 dark:text-amber-400/80 ml-0.5" title="Sincronizado con Honor Watch" />
       </button>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-zinc-900/95 border border-emerald-200/90 dark:border-amber-500/40 rounded-2xl p-4 my-2 shadow-xs transition-all space-y-3">
-      <div className="flex items-center justify-between">
+    <div className="bg-white dark:bg-zinc-900/95 border border-emerald-200/90 dark:border-emerald-800/80 rounded-2xl p-3.5 my-2 shadow-xs transition-all space-y-2.5 max-w-full">
+      <div className="flex items-center justify-between gap-1 flex-wrap">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-amber-500/20 text-emerald-600 dark:text-amber-400 border border-emerald-200/60 dark:border-transparent">
-            <Watch className="w-4 h-4 animate-pulse" />
+          <div className="p-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800">
+            <Timer className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-xs font-black text-slate-900 dark:text-zinc-100 block">Rest Timer • Reloj Conectado</span>
-            <span className="text-[10px] text-slate-500 dark:text-zinc-400 flex items-center gap-1 font-medium">
-              Honor Watch / Bluetooth Sync
+            <span className="text-xs font-black text-slate-900 dark:text-zinc-100 block">Temporizador de Descanso</span>
+            <span className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium truncate max-w-[150px] sm:max-w-xs block">
+              {exerciseName}
             </span>
           </div>
         </div>
@@ -218,19 +217,19 @@ export default function RestTimer({
         <div className="flex items-center gap-1">
           <button
             onClick={() => startTimer(60)}
-            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 60 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 60 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'}`}
           >
             60s
           </button>
           <button
             onClick={() => startTimer(90)}
-            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 90 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 90 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'}`}
           >
             90s
           </button>
           <button
             onClick={() => startTimer(120)}
-            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 120 ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black' : 'bg-slate-100 text-slate-600 hover:text-slate-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:text-white'}`}
+            className={`px-2 py-0.5 text-[10px] rounded-lg font-bold transition-colors ${secondsLeft === 120 ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600 dark:bg-zinc-800 dark:text-zinc-400'}`}
           >
             120s
           </button>
@@ -249,7 +248,7 @@ export default function RestTimer({
       {/* Progress Bar */}
       <div className="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 dark:from-amber-500 dark:to-orange-500 transition-all duration-300"
+          className="h-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-300"
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -270,7 +269,7 @@ export default function RestTimer({
                 ? 'bg-amber-500 text-black hover:bg-amber-400 font-bold' 
                 : 'bg-emerald-600 text-white hover:bg-emerald-500 font-bold'
             }`}
-            title={isActive ? "Pausar (o pausa en tu reloj)" : "Reanudar"}
+            title={isActive ? "Pausar" : "Reanudar"}
           >
             {isActive ? <Pause className="w-4 h-4 fill-current" /> : <Play className="w-4 h-4 fill-current" />}
           </button>
@@ -285,22 +284,19 @@ export default function RestTimer({
         </div>
       </div>
 
-      {/* Badge explicativo de control en el reloj */}
-      <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px] text-slate-500 dark:text-zinc-400">
-        <span className="flex items-center gap-1 text-emerald-700 dark:text-amber-400/90 font-medium">
-          <Watch className="w-3 h-3" />
-          Controla con Play/Pausa o Siguiente (⏭️) en tu reloj
-        </span>
-        {notificationPermission !== 'granted' && (
+      {notificationPermission !== 'granted' && (
+        <div className="pt-2 border-t border-slate-100 dark:border-zinc-800/80 flex items-center justify-between text-[10px]">
+          <span className="text-slate-500 dark:text-zinc-400">¿Quieres aviso sonoro con pantalla bloqueada?</span>
           <button
             onClick={requestNotificationAccess}
-            className="text-amber-600 dark:text-orange-400 underline font-semibold flex items-center gap-0.5"
+            className="text-emerald-600 dark:text-emerald-400 underline font-semibold flex items-center gap-0.5"
           >
             <Bell className="w-3 h-3" />
-            Activar vibración
+            Activar avisos
           </button>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }
+
