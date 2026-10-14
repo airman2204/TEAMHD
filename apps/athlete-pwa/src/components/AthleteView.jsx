@@ -202,37 +202,38 @@ export default function AthleteView({
 
   return (
     <div className="flex flex-col min-h-screen bg-slate-50 dark:bg-[#09090b] text-slate-900 dark:text-zinc-100 w-full relative pb-20 transition-colors">
-      {/* Top Header App Brand Real (Sticky Mobile Header con soporte Dynamic Island / Notch) */}
-      <header className="sticky top-0 z-30 px-4 py-3 pt-[calc(0.75rem+env(safe-area-inset-top,0px))] bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-200/80 dark:border-zinc-800/80 flex items-center justify-between shadow-2xs transition-colors">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white text-xs shadow-md shadow-emerald-600/20">
-              AG
+      {/* Top Header App Brand Real (Fit-Trek UI Style) */}
+      <header className="sticky top-0 z-30 px-5 py-3.5 pt-[calc(0.85rem+env(safe-area-inset-top,0px))] bg-white/95 dark:bg-zinc-950/90 backdrop-blur-md border-b border-slate-100 dark:border-zinc-800/80 flex items-center justify-between shadow-xs transition-colors">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center font-black text-white text-xs shadow-md shadow-orange-500/25">
+              HD
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-black tracking-wider text-slate-900 dark:text-white">APP GYM</span>
-                <span className="text-[10px] text-slate-400 dark:text-zinc-500 font-bold">|</span>
-                <span className="text-xs font-bold tracking-wider text-emerald-600 dark:text-emerald-400">Atleta</span>
+                <span className="text-xs font-black tracking-tight text-slate-900 dark:text-white">TEAM HD</span>
+                <span className="text-[9px] font-black uppercase tracking-wider text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/60 px-1.5 py-0.2 rounded-md border border-orange-200/60 dark:border-orange-500/20">
+                  Athlete
+                </span>
               </div>
-              <p className="text-[10px] text-slate-500 dark:text-zinc-400 font-medium">Hola, <strong className="text-slate-800 dark:text-zinc-200">{athlete.name}</strong></p>
+              <p className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium">Hola, <strong className="text-slate-800 dark:text-zinc-200">{athlete.name}</strong></p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <ThemeToggle />
             {cart.length > 0 && (
               <button
                 onClick={onOpenCheckout}
-                className="relative p-2 bg-emerald-50 dark:bg-orange-500/20 border border-emerald-200 dark:border-orange-500/40 rounded-xl text-emerald-700 dark:text-orange-400 hover:bg-emerald-100 dark:hover:bg-orange-500/30 transition-all"
+                className="relative p-2.5 bg-orange-50 dark:bg-orange-950/60 border border-orange-200/80 dark:border-orange-500/30 rounded-2xl text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-all"
                 title="Ver carrito"
               >
                 <ShoppingBag className="w-4 h-4" />
-                <span className="absolute -top-1.5 -right-1.5 bg-emerald-600 dark:bg-orange-500 text-white dark:text-black text-[10px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-1.5 -right-1.5 bg-orange-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                   {totalCartItems}
                 </span>
               </button>
             )}
-            <div className="w-8 h-8 rounded-full border border-slate-200 dark:border-amber-500/40 overflow-hidden bg-slate-100 dark:bg-zinc-800 shadow-2xs">
+            <div className="w-9 h-9 rounded-2xl border-2 border-orange-200 dark:border-orange-500/30 overflow-hidden bg-slate-100 dark:bg-zinc-800 shadow-xs">
               <img src={athlete.avatar} alt={athlete.name} className="w-full h-full object-cover" />
             </div>
           </div>
@@ -298,25 +299,25 @@ export default function AthleteView({
                 </div>
               )}
 
-              {/* CRONÓMETRO DE SESIÓN ACTIVA & TIEMPO TOTAL DE ENTRENAMIENTO */}
-              <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-white to-slate-50 dark:from-zinc-900 dark:to-zinc-950 border border-slate-200/90 dark:border-zinc-800 shadow-md relative overflow-hidden transition-all">
+              {/* CRONÓMETRO DE SESIÓN ACTIVA (Estilo Fit-Trek UI) */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 shadow-sm relative overflow-hidden transition-all">
                 <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`p-2 rounded-xl ${isSessionActive ? 'bg-red-500/10 text-red-500 animate-pulse' : 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'}`}>
-                      <TimerIcon className="w-4 h-4" />
+                  <div className="flex items-center gap-2.5">
+                    <div className={`p-2.5 rounded-2xl ${isSessionActive ? 'bg-orange-500/10 text-orange-500 animate-pulse' : 'bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400'}`}>
+                      <TimerIcon className="w-5 h-5" />
                     </div>
                     <div>
                       <span className="text-[10px] uppercase font-black tracking-wider text-slate-400 dark:text-zinc-500 block">
-                        Entrenamiento en Vivo
+                        Workout Session
                       </span>
                       <h3 className="text-xs font-black text-slate-900 dark:text-white">
-                        {isSessionActive ? 'Sesión en Curso' : 'Control de Tiempo Total'}
+                        {isSessionActive ? 'Sesión en Vivo' : 'Tiempo de Entrenamiento'}
                       </h3>
                     </div>
                   </div>
 
                   {/* Reloj Digital Grande */}
-                  <div className="flex items-baseline gap-1 bg-slate-100 dark:bg-zinc-950 px-3.5 py-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
+                  <div className="flex items-baseline gap-1 bg-slate-50 dark:bg-zinc-950 px-3.5 py-1.5 rounded-2xl border border-slate-200/80 dark:border-zinc-800">
                     <span className="font-mono text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-wider">
                       {formatTimer(sessionSeconds)}
                     </span>
@@ -328,21 +329,21 @@ export default function AthleteView({
                 <div className="flex items-center gap-2 pt-1">
                   <button
                     onClick={handleToggleSession}
-                    className={`flex-1 py-2.5 px-4 rounded-xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
+                    className={`flex-1 py-3 px-4 rounded-2xl font-black text-xs flex items-center justify-center gap-2 transition-all shadow-sm ${
                       isSessionActive
                         ? 'bg-amber-500 hover:bg-amber-600 text-black shadow-amber-500/20'
-                        : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-600/20'
+                        : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-black shadow-orange-500/20'
                     }`}
                   >
                     {isSessionActive ? (
                       <>
-                        <Pause className="w-3.5 h-3.5 fill-current" />
+                        <Pause className="w-4 h-4 fill-current" />
                         <span>Pausar Sesión</span>
                       </>
                     ) : (
                       <>
-                        <Play className="w-3.5 h-3.5 fill-current" />
-                        <span>{sessionSeconds > 0 ? 'Reanudar Sesión' : 'Iniciar Entrenamiento'}</span>
+                        <Play className="w-4 h-4 fill-current" />
+                        <span>{sessionSeconds > 0 ? 'Reanudar' : 'Iniciar Entrenamiento'}</span>
                       </>
                     )}
                   </button>
@@ -351,19 +352,19 @@ export default function AthleteView({
                     <>
                       <button
                         onClick={handleFinishAndSaveSession}
-                        className="py-2.5 px-3.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-600/20 shrink-0"
-                        title="Finalizar y guardar tiempo total en base de datos"
+                        className="py-3 px-4 rounded-2xl bg-slate-900 hover:bg-black dark:bg-white dark:hover:bg-slate-200 text-white dark:text-black font-black text-xs flex items-center justify-center gap-1.5 transition-all shadow-sm shrink-0"
+                        title="Finalizar y guardar tiempo total"
                       >
-                        <Award className="w-3.5 h-3.5" />
-                        <span className="hidden xs:inline">Finalizar &</span> Guardar
+                        <Award className="w-4 h-4 text-orange-400 dark:text-orange-600" />
+                        <span className="hidden xs:inline">Finalizar</span>
                       </button>
 
                       <button
                         onClick={handleResetSession}
-                        className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors shrink-0"
-                        title="Reiniciar cronómetro"
+                        className="p-3 rounded-2xl bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition-colors shrink-0"
+                        title="Reiniciar"
                       >
-                        <RotateCcw className="w-3.5 h-3.5" />
+                        <RotateCcw className="w-4 h-4" />
                       </button>
                     </>
                   )}
@@ -371,25 +372,25 @@ export default function AthleteView({
 
                 {/* Notificación de Guardado */}
                 {sessionSavedNotice && (
-                  <div className="mt-3 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-xs text-emerald-700 dark:text-emerald-300 font-bold flex items-center gap-2 animate-in fade-in">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="mt-3 p-2.5 rounded-2xl bg-orange-50 dark:bg-orange-950/60 border border-orange-200 dark:border-orange-500/30 text-xs text-orange-700 dark:text-orange-300 font-bold flex items-center gap-2 animate-in fade-in">
+                    <CheckCircle2 className="w-4 h-4 text-orange-600 shrink-0" />
                     <span>{sessionSavedNotice}</span>
                   </div>
                 )}
               </div>
 
-              {/* Day Selector */}
+              {/* Day Selector (Fit-Trek Pill Carousel) */}
               <div>
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-zinc-400">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                     Plan Semanal Team HD
                   </h3>
-                  <span className="text-[11px] text-emerald-700 dark:text-amber-400 font-bold">
+                  <span className="text-[11px] text-orange-600 dark:text-orange-400 font-bold">
                     {currentRoutineDay.exercises.filter(e => e.completed).length}/{currentRoutineDay.exercises.length} Listos
                   </span>
                 </div>
 
-                <div className="grid grid-cols-7 gap-1 bg-white dark:bg-zinc-900/90 p-1.5 rounded-2xl border border-slate-200/90 dark:border-zinc-800 shadow-2xs transition-colors">
+                <div className="grid grid-cols-7 gap-1.5 bg-white dark:bg-zinc-900/90 p-2 rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm transition-colors">
                   {DAYS_OF_WEEK.map((day) => {
                     const isSelected = selectedDay === day;
                     const dayData = routines[day];
@@ -400,18 +401,18 @@ export default function AthleteView({
                       <button
                         key={day}
                         onClick={() => setSelectedDay(day)}
-                        className={`flex flex-col items-center py-2 rounded-xl transition-all relative ${
+                        className={`flex flex-col items-center py-2.5 rounded-2xl transition-all relative ${
                           isSelected
-                            ? 'bg-emerald-600 text-white dark:bg-amber-500 dark:text-black font-black shadow-xs scale-102'
+                            ? 'bg-gradient-to-tr from-orange-500 to-amber-500 text-black font-black shadow-md shadow-orange-500/25 scale-102'
                             : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50 dark:text-zinc-400 dark:hover:text-white dark:hover:bg-zinc-800/60'
                         }`}
                       >
-                        <span className="text-xs font-extrabold">{day}</span>
+                        <span className="text-xs font-black">{day}</span>
                         <div className="mt-1 flex items-center justify-center">
                           {isFullyCompleted ? (
-                            <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white dark:bg-black' : 'bg-emerald-500'}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-black' : 'bg-emerald-500'}`} />
                           ) : hasExercises ? (
-                            <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white dark:bg-black' : 'bg-amber-500'}`} />
+                            <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-black' : 'bg-orange-500'}`} />
                           ) : (
                             <span className="w-1.5 h-1.5 rounded-full bg-slate-200 dark:bg-zinc-700" />
                           )}
@@ -468,24 +469,24 @@ export default function AthleteView({
                   currentRoutineDay.exercises.map((ex, index) => (
                     <div
                       key={ex.id || index}
-                      className={`p-4 rounded-3xl border transition-all ${
+                      className={`p-4 sm:p-5 rounded-3xl border transition-all ${
                         ex.completed
-                          ? 'bg-emerald-50/50 dark:bg-zinc-950/70 border-emerald-300 dark:border-emerald-500/30 ring-1 ring-emerald-500/20'
-                          : 'bg-white dark:bg-zinc-900/80 border-slate-200/90 dark:border-zinc-800 shadow-2xs hover:border-slate-300 dark:hover:border-zinc-700'
+                          ? 'bg-orange-50/30 dark:bg-zinc-950/70 border-orange-200/80 dark:border-orange-500/20'
+                          : 'bg-white dark:bg-zinc-900/90 border-slate-200/80 dark:border-zinc-800 shadow-sm hover:border-orange-300 dark:hover:border-zinc-700'
                       }`}
                     >
                       {/* Exercise Header */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-start gap-2.5">
-                          <span className="flex items-center justify-center w-6 h-6 rounded-lg bg-slate-100 dark:bg-zinc-800 text-emerald-600 dark:text-amber-400 font-black text-xs mt-0.5">
+                        <div className="flex items-start gap-3">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-xl bg-orange-50 dark:bg-orange-950/60 text-orange-600 dark:text-orange-400 font-black text-xs mt-0.5 border border-orange-200/60 dark:border-orange-500/20">
                             {index + 1}
                           </span>
                           <div>
-                            <h4 className={`text-sm font-black ${ex.completed ? 'text-slate-400 dark:text-zinc-400 line-through' : 'text-slate-900 dark:text-white'}`}>
+                            <h4 className={`text-sm font-black ${ex.completed ? 'text-slate-400 dark:text-zinc-500 line-through' : 'text-slate-900 dark:text-white'}`}>
                               {ex.name}
                             </h4>
                             <div className="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-zinc-400 font-medium">
-                              <span className="font-bold text-emerald-600 dark:text-amber-400/90">{ex.series}</span>
+                              <span className="font-black text-orange-600 dark:text-orange-400 font-mono">{ex.series}</span>
                               <span>•</span>
                               <span>Descanso: {ex.restSeconds}s</span>
                             </div>
