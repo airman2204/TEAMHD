@@ -500,7 +500,7 @@ export default function App() {
         onUpdateCartQty={handleUpdateCartQty}
         onRemoveCartItem={handleRemoveCartItem}
         onClearCart={handleClearCart}
-        athlete={athlete || INITIAL_STUDENTS[0]}
+        athlete={athlete}
         onCompleteOrder={handleCompleteOrder}
       />
     </div>
